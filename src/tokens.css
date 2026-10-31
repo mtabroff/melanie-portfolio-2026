@@ -12,6 +12,9 @@
   --surface-background: #f3f2f0;
   --surface-divider: #dbdbdb;
   --surface-card-fill: #f6f5f3; /* used by WorkCard in Figma, but not a Figma variable */
+  --text-project: #1b1b1b;                  /* same: hardcoded on SideColumn in Figma */
+  --text-project-muted: rgba(27, 27, 27, 0.3);
+  --surface-overlay-fill: rgba(255, 255, 255, 0.94);
 
   color-scheme: light;
 
@@ -21,6 +24,7 @@
    */
   --surface-page: var(--surface-z0);
   --surface-card: var(--surface-card-fill);
+  --surface-overlay: var(--surface-overlay-fill);
   --surface-topbar-fade: linear-gradient(
     to bottom,
     var(--surface-z0) 0%,
@@ -71,9 +75,15 @@
   --avatar-nav: 48px;
   --radius-card: 32px;
   --height-card: 552px;
+  --hero-peek: 27px;       /* how much of the first card shows on the first screen */
+  --hero-cue-bottom: 37px;
+  --hero-cue-space: 98px;  /* keeps the intro clear of the cue */
+  --panel-width: 173px;
+  --panel-gap: var(--space-5);
 
   /* ---------- motion ---------- */
   --avatar-fade: 0.2s;
+  --reveal-fade: 0.25s; /* ease-out, from the WorkCardReveal prototype */
 }
 
 /* Mobile values. Keep this breakpoint in sync with the shell in style.css. */
@@ -87,7 +97,6 @@
     --gutter: 20px;
     --avatar-hero: var(--space-8);
     --radius-card: var(--space-3);
-    --height-card: 336px;
   }
 }
 
@@ -105,6 +114,9 @@
     --surface-background: #1a1a1a;
     --surface-divider: #2e2e2e;
     --surface-card-fill: #1c1c1b;
+    --text-project: #f2f2f2;
+    --text-project-muted: rgba(242, 242, 242, 0.3);
+    --surface-overlay-fill: rgba(16, 16, 16, 0.94);
 
     color-scheme: dark;
   }
@@ -118,6 +130,9 @@
   --surface-background: #1a1a1a;
   --surface-divider: #2e2e2e;
   --surface-card-fill: #1c1c1b;
+  --text-project: #f2f2f2;
+  --text-project-muted: rgba(242, 242, 242, 0.3);
+  --surface-overlay-fill: rgba(16, 16, 16, 0.94);
 
   color-scheme: dark;
 }

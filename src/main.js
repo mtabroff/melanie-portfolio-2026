@@ -1,5 +1,6 @@
-// Scroll-driven behavior (active nav state, avatar placement) and the theme toggle.
-// (Still to come later: weather widget, work-section text fade.)
+// Scroll-driven behavior (active nav state, avatar placement, work side panel),
+// the work card reveal, and the theme toggle.
+// (Still to come later: weather widget.)
 
 const app = document.getElementById('app')
 const heroAvatar = document.querySelector('.hero-avatar')
@@ -10,6 +11,17 @@ const navLinks = new Map(
 
 // Matches the shell breakpoint in style.css.
 const desktop = window.matchMedia('(min-width: 960px)')
+
+// Matches the side panel breakpoint in style.css.
+const panelLayout = window.matchMedia('(min-width: 1200px)')
+
+const projects = [...document.querySelectorAll('.project')]
+
+// A card's text is fully shown until its center is this far (px) from the viewport center,
+// then fades out by PANEL_FADE_END. Cards are 568px apart, so the fades just overlap
+// and the panel is never empty.
+const PANEL_HOLD = 200
+const PANEL_FADE_END = 300
 
 let activeId = null
 
@@ -38,12 +50,24 @@ function updateAvatar() {
   app.classList.toggle('is-scrolled', activeId !== 'about' || heroAvatarGone)
 }
 
+function updatePanel() {
+  if (!panelLayout.matches) return
+  const viewportCenter = window.innerHeight / 2
+  for (const project of projects) {
+    const rect = project.getBoundingClientRect()
+    const distance = Math.abs(rect.top + rect.height / 2 - viewportCenter)
+    const reveal = (PANEL_FADE_END - distance) / (PANEL_FADE_END - PANEL_HOLD)
+    project.style.setProperty('--reveal', Math.min(Math.max(reveal, 0), 1))
+  }
+}
+
 let ticking = false
 
 function update() {
   ticking = false
   updateSections()
   updateAvatar()
+  updatePanel()
 }
 
 function requestUpdate() {
@@ -56,6 +80,40 @@ window.addEventListener('scroll', requestUpdate, { passive: true })
 window.addEventListener('resize', requestUpdate)
 desktop.addEventListener('change', requestUpdate)
 update()
+
+// Work card reveal, for screens without the side panel. Only one is open at a time.
+function setRevealed(project, revealed) {
+  project.classList.toggle('is-revealed', revealed)
+  const toggle = project.querySelector('.info-toggle')
+  toggle.setAttribute('aria-expanded', String(revealed))
+  toggle.setAttribute('aria-label', revealed ? 'hide project details' : 'show project details')
+}
+
+function closeReveals(except) {
+  for (const project of projects) {
+    if (project !== except && project.classList.contains('is-revealed')) setRevealed(project, false)
+  }
+}
+
+for (const project of projects) {
+  project.querySelector('.info-toggle').addEventListener('click', () => {
+    closeReveals(project)
+    setRevealed(project, !project.classList.contains('is-revealed'))
+  })
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return
+  const open = document.querySelector('.project.is-revealed')
+  if (!open) return
+  setRevealed(open, false)
+  open.querySelector('.info-toggle').focus()
+})
+
+panelLayout.addEventListener('change', () => {
+  closeReveals()
+  requestUpdate()
+})
 
 // Theme. The inline script in index.html sets the starting theme before first paint.
 const THEME_KEY = 'theme'

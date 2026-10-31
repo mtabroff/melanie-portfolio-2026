@@ -1,0 +1,54 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="26.3798" height="6.08764" viewBox="0 0 26.3798 6.08764" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Core / Traffic Lights (Big Sur)">
+<g id="close">
+<g filter="url(#filter0_i_0_1962)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3.04382 6.08764C4.72488 6.08764 6.08764 4.72488 6.08764 3.04382C6.08764 1.36276 4.72488 0 3.04382 0C1.36276 0 0 1.36276 0 3.04382C0 4.72488 1.36276 6.08764 3.04382 6.08764Z" fill="#EE6A5F"/>
+</g>
+<path d="M3.04395 0.126953C4.6549 0.12702 5.96094 1.43297 5.96094 3.04395C5.96087 4.65486 4.65486 5.96087 3.04395 5.96094C1.43297 5.96094 0.12702 4.6549 0.126953 3.04395C0.126953 1.43293 1.43293 0.126953 3.04395 0.126953Z" stroke="#CE5347" stroke-width="0.253652"/>
+</g>
+<g id="minimize">
+<g filter="url(#filter1_i_0_1962)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.1899 6.08764C14.8709 6.08764 16.2337 4.72488 16.2337 3.04382C16.2337 1.36276 14.8709 0 13.1899 0C11.5088 0 10.1461 1.36276 10.1461 3.04382C10.1461 4.72488 11.5088 6.08764 13.1899 6.08764Z" fill="#F5BD4F"/>
+</g>
+<path d="M13.19 0.126953C14.801 0.12702 16.107 1.43297 16.107 3.04395C16.1069 4.65486 14.8009 5.96087 13.19 5.96094C11.579 5.96094 10.2731 4.6549 10.273 3.04395C10.273 1.43293 11.579 0.126953 13.19 0.126953Z" stroke="#D6A243" stroke-width="0.253652"/>
+</g>
+<g id="fullscreen">
+<g filter="url(#filter2_i_0_1962)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23.336 6.08764C25.017 6.08764 26.3798 4.72488 26.3798 3.04382C26.3798 1.36276 25.017 0 23.336 0C21.6549 0 20.2921 1.36276 20.2921 3.04382C20.2921 4.72488 21.6549 6.08764 23.336 6.08764Z" fill="#61C454"/>
+</g>
+<path d="M23.3361 0.126953C24.947 0.12702 26.2531 1.43297 26.2531 3.04395C26.253 4.65486 24.947 5.96087 23.3361 5.96094C21.7251 5.96094 20.4192 4.6549 20.4191 3.04395C20.4191 1.43293 21.7251 0.126953 23.3361 0.126953Z" stroke="#58A942" stroke-width="0.253652"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_i_0_1962" x="0" y="0" width="6.08764" height="6.08764" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="1.52191"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.92549 0 0 0 0 0.427451 0 0 0 0 0.384314 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_1962"/>
+</filter>
+<filter id="filter1_i_0_1962" x="10.1461" y="0" width="6.08764" height="6.08764" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="1.52191"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.960784 0 0 0 0 0.768627 0 0 0 0 0.317647 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_1962"/>
+</filter>
+<filter id="filter2_i_0_1962" x="20.2921" y="0" width="6.08764" height="6.08764" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="1.52191"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.407843 0 0 0 0 0.8 0 0 0 0 0.345098 0 0 0 1 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_1962"/>
+</filter>
+</defs>
+</svg>
