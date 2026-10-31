@@ -623,13 +623,12 @@ h1 {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
-  font: inherit;
+  font: var(--type-label-medium);
   letter-spacing: inherit;
   color: inherit;
 }
 
 .project-copy .year {
-  font: var(--type-label-medium);
   color: var(--text-project-muted);
 }
 
@@ -692,7 +691,8 @@ h1 {
 .places-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--place-row-gap);
+  padding-block: var(--places-list-padding);
 }
 
 /* The min() keeps the stack on screen on very narrow phones. */
@@ -769,7 +769,7 @@ h1 {
   justify-content: center;
   font: var(--type-accent);
   letter-spacing: var(--tracking-accent);
-  color: #9f9f9f; /* Text/Secondary: the polaroid stays white, so this doesn't change with the theme */
+  color: var(--text-polaroid);
   white-space: nowrap;
 }
 

@@ -24,6 +24,10 @@
   --surface-overlay-fill: rgba(255, 255, 255, 0.94);
   --surface-modal-fill: #ffffff;
   --surface-placeholder-fill: #ebebeb;
+  --surface-polaroid-fill: #ffffff;
+  --surface-polaroid-border-fill: #dbdbdb;
+  --surface-polaroid-photo-fill: #ebebeb;
+  --text-polaroid: #9f9f9f;
   --scrollbar-thumb: rgba(0, 0, 0, 0.2);
 
   color-scheme: light;
@@ -37,10 +41,9 @@
   --surface-overlay: var(--surface-overlay-fill);
   --surface-modal: var(--surface-modal-fill);
   --surface-placeholder: var(--surface-placeholder-fill);
-  /* Polaroids are physical objects, so they stay white in dark mode too. */
-  --surface-polaroid: #ffffff;
-  --surface-polaroid-border: #dbdbdb;
-  --surface-polaroid-photo: #ebebeb;
+  --surface-polaroid: var(--surface-polaroid-fill);
+  --surface-polaroid-border: var(--surface-polaroid-border-fill);
+  --surface-polaroid-photo: var(--surface-polaroid-photo-fill);
   --surface-topbar-fade: linear-gradient(
     to bottom,
     var(--surface-z0) 0%,
@@ -101,6 +104,8 @@
   --polaroid-unit: 1px;    /* the stack is drawn in Figma's desktop pixels and scaled by this */
   --place-row-odd: 104px;
   --place-row-even: 176px;
+  --place-row-gap: var(--space-10);
+  --places-list-padding: var(--space-5);
 
   /* ---------- motion ---------- */
   --avatar-fade: 0.2s;
@@ -123,6 +128,8 @@
     --polaroid-unit: 0.85px;
     --place-row-odd: var(--space-3);
     --place-row-even: 72px;
+    --place-row-gap: var(--space-6);
+    --places-list-padding: 0;
   }
 }
 
@@ -145,6 +152,10 @@
     --surface-overlay-fill: rgba(16, 16, 16, 0.94);
     --surface-modal-fill: #1a1a1a;
     --surface-placeholder-fill: #2a2a2a;
+    --surface-polaroid-fill: #c9c6c0;
+    --surface-polaroid-border-fill: #b5b2ac;
+    --surface-polaroid-photo-fill: #b5b2ac;
+    --text-polaroid: #5f5d59;
     --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 
     color-scheme: dark;
@@ -164,6 +175,10 @@
   --surface-overlay-fill: rgba(16, 16, 16, 0.94);
   --surface-modal-fill: #1a1a1a;
   --surface-placeholder-fill: #2a2a2a;
+  --surface-polaroid-fill: #c9c6c0;
+  --surface-polaroid-border-fill: #b5b2ac;
+  --surface-polaroid-photo-fill: #b5b2ac;
+  --text-polaroid: #5f5d59;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 
   color-scheme: dark;
