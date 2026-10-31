@@ -55,6 +55,11 @@
     transparent var(--hero-fade-start),
     var(--surface-z0) var(--hero-fade-end)
   );
+  --surface-contact-fade: linear-gradient(
+    to bottom,
+    var(--surface-z0) 0%,
+    transparent var(--contact-fade-end)
+  );
   --surface-hero-polaroid: var(--surface-hero-polaroid-fill);
   --surface-hero-polaroid-border: var(--surface-hero-polaroid-border-fill);
   --surface-topbar-fade: linear-gradient(
@@ -115,11 +120,16 @@
   --hero-min-height: 606px; /* keeps the intro clear of the cue on short screens */
   --hero-photo-opacity: 0.16;
   --hero-photo-zoom: 250.78%; /* HeroBgImage's crop, as a share of the frame width */
+  --hero-photo-zoom-vw: 250.78vw;
   --hero-photo-min-width: 3210px; /* holds that zoom on narrow screens, so no faces show */
   --hero-photo-x: 26.89%;
   --hero-fade-start: 60.76%;
   --hero-fade-end: 87.53%;
   --hero-tilt: -2deg;
+  --contact-min-height: 665px;
+  --contact-photo-width: max(var(--hero-photo-zoom-vw), var(--hero-photo-min-width));
+  --contact-photo-height: calc(var(--contact-photo-width) * 1.2523); /* Figma stretches the crop slightly here */
+  --contact-fade-end: 86.68%;
   --panel-width: 173px;
   --panel-gap: var(--space-5);
   --polaroid-unit: 1px;    /* the stack is drawn in Figma's desktop pixels and scaled by this */

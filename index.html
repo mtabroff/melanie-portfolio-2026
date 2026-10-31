@@ -319,13 +319,47 @@
               </span>
             </button>
           </li>
+
+          <li class="place-row">
+            <button class="polaroid-stack" type="button" aria-haspopup="dialog" aria-controls="place-massachusetts" aria-label="open photos from Massachusetts, 2026">
+              <span class="polaroid polaroid-back-left">
+                <span class="polaroid-photo"></span>
+                <span class="polaroid-caption">Massachusetts 2026</span>
+              </span>
+              <span class="polaroid polaroid-back-right">
+                <span class="polaroid-photo"></span>
+                <span class="polaroid-caption">Massachusetts 2026</span>
+              </span>
+              <span class="polaroid polaroid-front">
+                <span class="polaroid-photo"></span>
+                <span class="polaroid-caption">Massachusetts 2026</span>
+              </span>
+            </button>
+          </li>
         </ul>
       </section>
 
-      <!-- placeholder: the full contact section gets built in a later session -->
-      <section id="contact" class="section placeholder-section contact" aria-labelledby="contact-heading">
+      <section id="contact" class="section contact" aria-labelledby="contact-heading">
+        <div class="contact-bg" aria-hidden="true"></div>
         <h2 id="contact-heading" class="visually-hidden">contact</h2>
-        <p class="lede">interested in working together? <a href="mailto:melanietabroff@gmail.com">let’s chat</a>.</p>
+        <div class="contact-cta">
+          <p class="lede">interested in working together? <a href="mailto:melanietabroff@gmail.com">let’s chat</a>.</p>
+          <p class="contact-reply">It's <span id="nyc-time">8:12pm</span> in NYC. i usually reply within a day.</p>
+        </div>
+
+        <!-- mobile only: Figma puts the toggle and links here on small screens -->
+        <footer class="site-footer">
+          <button class="theme-toggle" type="button" aria-label="switch theme">
+            <img class="icon-moon" src="/src/assets/icons/moon.svg" width="20" height="20" alt="">
+            <img class="icon-sun" src="/src/assets/icons/sun.svg" width="20" height="20" alt="">
+          </button>
+          <ul class="side-links">
+            <!-- TODO: resume + linkedin URLs not provided yet -->
+            <li><a aria-disabled="true">resume <span class="arrow" aria-hidden="true">↗</span></a></li>
+            <li><a href="mailto:melanietabroff@gmail.com">email <span class="arrow" aria-hidden="true">↗</span></a></li>
+            <li><a aria-disabled="true">linkedin <span class="arrow" aria-hidden="true">↗</span></a></li>
+          </ul>
+        </footer>
       </section>
     </main>
 
@@ -430,19 +464,30 @@
       </div>
     </dialog>
 
-    <!-- mobile only: Figma puts the toggle and links here on small screens -->
-    <footer class="site-footer">
-      <button class="theme-toggle" type="button" aria-label="switch theme">
-        <img class="icon-moon" src="/src/assets/icons/moon.svg" width="20" height="20" alt="">
-        <img class="icon-sun" src="/src/assets/icons/sun.svg" width="20" height="20" alt="">
-      </button>
-      <ul class="side-links">
-        <!-- TODO: resume + linkedin URLs not provided yet -->
-        <li><a aria-disabled="true">resume <span class="arrow" aria-hidden="true">↗</span></a></li>
-        <li><a href="mailto:melanietabroff@gmail.com">email <span class="arrow" aria-hidden="true">↗</span></a></li>
-        <li><a aria-disabled="true">linkedin <span class="arrow" aria-hidden="true">↗</span></a></li>
-      </ul>
-    </footer>
+    <dialog class="place-modal" id="place-massachusetts" aria-labelledby="place-massachusetts-title" aria-describedby="place-massachusetts-description">
+      <div class="place-modal-panel">
+        <header class="place-modal-header">
+          <div class="place-modal-title">
+            <h3 id="place-massachusetts-title">Massachusetts · 2026</h3>
+            <p id="place-massachusetts-description">[placeholder]</p>
+          </div>
+          <button class="place-modal-close" type="button">
+            close
+            <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
+          </button>
+        </header>
+        <div class="place-modal-body">
+          <div class="place-modal-scroll" tabindex="0" aria-label="photos from Massachusetts">
+            <div class="place-photos">
+              <div class="place-photo" aria-hidden="true"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
   </div>
 
   <script type="module" src="/src/main.js"></script>

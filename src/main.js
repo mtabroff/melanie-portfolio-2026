@@ -40,6 +40,9 @@ function updateSections() {
   for (const section of sections) {
     if (section.getBoundingClientRect().top <= line) current = section
   }
+  // On a tall screen the footer can't scroll up to the line, so the end of the page counts too.
+  const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
+  if (atEnd) current = sections[sections.length - 1]
   setActiveSection(current.id)
 }
 
@@ -156,6 +159,21 @@ window.addEventListener('resize', () => {
   const open = document.querySelector('.place-modal[open]')
   if (open) updateModalFade(open)
 })
+
+// The time in the footer, in case someone reads it far from NYC.
+const nycTime = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: 'numeric',
+  minute: '2-digit',
+})
+
+function updateNycTime() {
+  const time = nycTime.format(new Date()).replace(/\s/g, '').toLowerCase()
+  document.getElementById('nyc-time').textContent = time
+}
+
+updateNycTime()
+setInterval(updateNycTime, 30000)
 
 // Theme. The inline script in index.html sets the starting theme before first paint.
 const THEME_KEY = 'theme'

@@ -301,7 +301,8 @@ h3 {
  * It runs the full width of the screen, behind the side rails, and past the bottom
  * of the hero to the end of the first screen.
  */
-.hero-bg {
+.hero-bg,
+.contact-bg {
   position: absolute;
   z-index: -1;
   top: 0;
@@ -312,13 +313,16 @@ h3 {
 }
 
 .hero-bg::before,
-.hero-bg::after {
+.hero-bg::after,
+.contact-bg::before,
+.contact-bg::after {
   content: '';
   position: absolute;
   inset: 0;
 }
 
-.hero-bg::before {
+.hero-bg::before,
+.contact-bg::before {
   background: var(--surface-hero-photo) no-repeat var(--hero-photo-x) 0 / max(var(--hero-photo-zoom), var(--hero-photo-min-width)) auto;
   opacity: var(--hero-photo-opacity);
 }
@@ -1066,18 +1070,43 @@ html:has(.place-modal[open]) {
   }
 }
 
-/* ---------- placeholder: contact gets built in a later session ---------- */
-
-.placeholder-section {
-  min-height: 100svh;
-  padding-block: var(--space-12);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-}
+/* ---------- contact / footer ---------- */
 
 .contact {
+  position: relative;
+  min-height: var(--contact-min-height);
+  padding-block: var(--space-6);
+  display: flex;
+  flex-direction: column;
   justify-content: center;
+}
+
+/* The Contact frame's fills: same base and photo as the hero, fading in from the page. */
+.contact-bg {
+  bottom: 0;
+}
+
+.contact-bg::before {
+  background-size: var(--contact-photo-width) var(--contact-photo-height);
+}
+
+.contact-bg::after {
+  background: var(--surface-contact-fade);
+}
+
+.contact-cta {
+  align-self: center;
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contact-reply {
+  font: var(--type-body-small);
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--text-secondary);
 }
 
 /* ---------- mobile: nav becomes a top bar, toggle and links move to the footer ---------- */
@@ -1128,7 +1157,6 @@ html:has(.place-modal[open]) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4) var(--gutter);
     font: var(--type-label);
     letter-spacing: var(--tracking-label);
     color: var(--text-secondary);
@@ -1195,9 +1223,22 @@ html:has(.place-modal[open]) {
     gap: var(--gap-side-links);
   }
 
-  .placeholder-section {
-    padding-block: var(--space-6);
-    min-height: calc(100svh - var(--topbar-height));
+  .contact {
+    min-height: 0;
+    padding-block: 0 var(--space-4);
+    gap: var(--space-10);
+  }
+
+  /* 120px tall in Figma, with the text centered inside it. */
+  .contact-cta {
+    align-self: stretch;
+    width: auto;
+    min-height: 120px;
+    justify-content: center;
+  }
+
+  .contact-reply {
+    line-height: 1.5;
   }
 }
 
