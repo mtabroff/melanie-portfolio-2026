@@ -1,21 +1,15 @@
-// Scroll-driven behavior: active nav state, avatar placement, and the work-section text fade.
-// (Still to come later: weather widget, dark mode.)
+// Scroll-driven behavior (active nav state, avatar placement) and the theme toggle.
+// (Still to come later: weather widget, work-section text fade.)
 
 const app = document.getElementById('app')
-const nav = document.querySelector('.site-nav')
 const heroAvatar = document.querySelector('.hero-avatar')
 const sections = [...document.querySelectorAll('main > section[id]')]
 const navLinks = new Map(
   [...document.querySelectorAll('[data-nav]')].map((link) => [link.dataset.nav, link]),
 )
-const projects = [...document.querySelectorAll('.project')]
 
-// The side-by-side layout (and therefore the fade) only exists at this width; see style.css.
-const desktop = window.matchMedia('(min-width: 1200px)')
-
-// How long a project must stay in/out of center before its text changes.
-// Stops flicker when someone scrolls back and forth right at the trigger point.
-const SETTLE_MS = 150
+// Matches the shell breakpoint in style.css.
+const desktop = window.matchMedia('(min-width: 960px)')
 
 let activeId = null
 
@@ -28,57 +22,28 @@ function setActiveSection(id) {
   }
 }
 
-function updateSections(viewportMid) {
-  // The active section is the one crossing the middle of the viewport.
+function updateSections() {
+  // The active section is the one crossing this line. It sits higher on mobile, where
+  // the hero is short enough that the next section starts near the middle of the screen.
+  const line = window.innerHeight * (desktop.matches ? 1 / 2 : 1 / 3)
   let current = sections[0]
   for (const section of sections) {
-    if (section.getBoundingClientRect().top <= viewportMid) current = section
+    if (section.getBoundingClientRect().top <= line) current = section
   }
   setActiveSection(current.id)
 }
 
 function updateAvatar() {
-  // On small screens the sticky top bar covers the top of the page, so treat
-  // the hero avatar as "gone" once it slides under the bar.
-  const topInset = getComputedStyle(nav).position === 'sticky' ? nav.offsetHeight : 0
-  const heroAvatarGone = heroAvatar.getBoundingClientRect().bottom <= topInset
+  const heroAvatarGone = heroAvatar.getBoundingClientRect().bottom <= 0
   app.classList.toggle('is-scrolled', activeId !== 'about' || heroAvatarGone)
-}
-
-const pending = new WeakMap()
-
-function updateProjects(viewportMid) {
-  for (const project of projects) {
-    const rect = project.getBoundingClientRect()
-    const centered = desktop.matches && rect.top <= viewportMid && rect.bottom >= viewportMid
-    const showing = project.classList.contains('is-centered')
-
-    if (centered === showing) {
-      // Back to where it was before the change settled, so cancel the change.
-      clearTimeout(pending.get(project))
-      pending.delete(project)
-      continue
-    }
-    if (pending.has(project)) continue
-
-    pending.set(
-      project,
-      setTimeout(() => {
-        pending.delete(project)
-        project.classList.toggle('is-centered', centered)
-      }, SETTLE_MS),
-    )
-  }
 }
 
 let ticking = false
 
 function update() {
   ticking = false
-  const viewportMid = window.innerHeight / 2
-  updateSections(viewportMid)
+  updateSections()
   updateAvatar()
-  updateProjects(viewportMid)
 }
 
 function requestUpdate() {
@@ -91,3 +56,47 @@ window.addEventListener('scroll', requestUpdate, { passive: true })
 window.addEventListener('resize', requestUpdate)
 desktop.addEventListener('change', requestUpdate)
 update()
+
+// Theme. The inline script in index.html sets the starting theme before first paint.
+const THEME_KEY = 'theme'
+const root = document.documentElement
+const toggles = [...document.querySelectorAll('.theme-toggle')]
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
+
+function applyTheme(theme) {
+  root.dataset.theme = theme
+  const next = theme === 'dark' ? 'light' : 'dark'
+  for (const toggle of toggles) toggle.setAttribute('aria-label', `switch to ${next} mode`)
+}
+
+// Storage can throw in private windows or when site data is blocked.
+function savedTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY)
+  } catch {
+    return null
+  }
+}
+
+function saveTheme(theme) {
+  try {
+    localStorage.setItem(THEME_KEY, theme)
+  } catch {
+    // The toggle still works for this visit.
+  }
+}
+
+for (const toggle of toggles) {
+  toggle.addEventListener('click', () => {
+    const theme = root.dataset.theme === 'dark' ? 'light' : 'dark'
+    saveTheme(theme)
+    applyTheme(theme)
+  })
+}
+
+// Keep following the system setting until the visitor makes their own choice.
+systemDark.addEventListener('change', (event) => {
+  if (!savedTheme()) applyTheme(event.matches ? 'dark' : 'light')
+})
+
+applyTheme(root.dataset.theme)

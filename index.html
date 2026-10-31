@@ -5,6 +5,20 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>melanie joy tabroff · product designer</title>
+  <script>
+    // Runs before first paint so the page never flashes the wrong theme.
+    (function () {
+      var theme
+      try {
+        theme = localStorage.getItem('theme')
+      } catch (e) {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.dataset.theme = theme
+    })()
+  </script>
+  <link rel="stylesheet" href="/src/tokens.css" />
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 
@@ -12,7 +26,7 @@
   <a class="skip-link" href="#main">skip to content</a>
 
   <div id="app">
-    <!-- left navigation (pinned on desktop, top bar on small screens) -->
+    <!-- SideNav on desktop, top bar on mobile -->
     <nav class="site-nav" aria-label="Sections">
       <a class="nav-avatar" href="#top" aria-label="Back to top">
         <img src="/src/assets/avatar.png" class="avatar" width="48" height="48" alt="">
@@ -20,16 +34,20 @@
       <ul class="nav-list">
         <li><a href="#about" data-nav="about" aria-current="true">about</a></li>
         <li><a href="#work" data-nav="work">work</a></li>
-        <li><a href="#travel" data-nav="travel">travel</a></li>
+        <li><a href="#places" data-nav="places">places</a></li>
         <li><a href="#contact" data-nav="contact">contact</a></li>
       </ul>
+      <button class="theme-toggle" type="button" aria-label="switch theme">
+        <img class="icon-moon" src="/src/assets/icons/moon.svg" width="20" height="20" alt="">
+        <img class="icon-sun" src="/src/assets/icons/sun.svg" width="20" height="20" alt="">
+      </button>
     </nav>
 
-    <!-- right side: weather + links (pinned on desktop) -->
+    <!-- SideInfo: desktop only -->
     <aside class="side-right" aria-label="Weather and links">
       <div class="weather">
         <p class="weather-temp">
-          <img src="/src/assets/weather.svg" width="10.7585" height="12" alt="">
+          <span class="weather-icon" aria-hidden="true"></span>
           <span>[temperature]° in NYC</span>
         </p>
         <p>Feels {something}</p>
@@ -47,7 +65,7 @@
         <header class="hero-header">
           <img src="/src/assets/avatar.png" class="avatar hero-avatar" width="72" height="72" alt="">
           <h1>
-            <span>melanie joy tabroff</span>
+            <span class="name">melanie joy tabroff</span>
             <span class="divider" aria-hidden="true">|</span>
             <span class="role">product designer</span>
           </h1>
@@ -55,120 +73,40 @@
         <p class="lede">i’m a product designer based in NYC. 7+ years building for high-stakes, human moments at fast-moving startups, most recently in teen mental health at <span class="underline">Somethings</span>, before that in personal finance at <span class="underline">Titan</span>. currently taking my time before diving into what's next.</p>
       </section>
 
-      <section id="work" class="section work" aria-labelledby="work-heading">
+      <!-- placeholder: work cards get built in a later session -->
+      <section id="work" class="section placeholder-section" aria-labelledby="work-heading">
         <h2 id="work-heading" class="visually-hidden">work</h2>
-        <p class="lede intro">below is a sampling of work over the years. for the story behind the screens, <a href="mailto:melanietabroff@gmail.com">message me</a> and i’ll send you a link.</p>
-
-        <ol class="projects">
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Somethings</span> <span class="year">2025-2026</span></h3>
-              <p>Somethings connects teens with mentors who've been through similar struggles, using that relationship as a mental health intervention.</p>
-              <p>i loved the mission, and i joined to help shape the teen experience and solve for retention. the first real swing was re-architecting the app around two things: chat, and a shared "hub" — a space to reflect, share, and connect beyond conversation. the core problem was keeping teens coming back and engaged even when their mentor was offline.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Somethings</span> <span class="year">2025-2026</span></h3>
-              <p>one of the early features we shipped was photo “swaps”, built on a simple insight: if a mentor opens up first, teens are more likely to follow.</p>
-              <p>photo swaps made that easy: a mentor and teen each send a photo to the same prompt, and it reveals for both at once. it was especially effective for teens who were still warming up to their mentor.</p>
-              <p>the harder problem was making it scale: mentors were each juggling 20+ teens, sometimes dealing with very high-risk problems, so whatever we asked of them had to be lightweight.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Somethings</span> <span class="year">2025</span></h3>
-              <p>when i joined Somethings, we were in the process of redesigning our website with the agency Love&amp;Money to add legitimacy to our brand as we expanded to new markets.<br>what started as a website overhaul blossomed into a full brand identity evolution.</p>
-              <p>i had a lot of fun giving feedback on art direction while translating the new brand to our product and marketing surfaces, building a mobile design system and marketing kit along the way.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Titan</span> <span class="year">2025</span></h3>
-              <p>Titan is a mobile-first wealth management platform.</p>
-              <p>over my three years there, we expanded into sophisticated territory, from alternative investments to DIY stock trading. this project was the swing back to simplicity: moving from "set it and forget it" DIY investing to a more human, advisor-led experience, right as Titan crossed $1b in AUM.</p>
-              <p>the challenge was creating one clear feeling: i trust these people with my money. that meant making the experience simple enough to feel like you're in good hands, while preserving the detail savvy investors need to understand their money.</p>
-              <p>myself and two other designers led the end-to-end redesign, a project that leaned hard on rapid prototyping, storytelling, and navigating real ambiguity.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Titan</span> <span class="year">2024</span></h3>
-              <p>while Titan was mid-rebrand, we were also testing a new lifestyle vertical — Titan Concierge — offering clients exclusive drops, restaurant reservations, and access to the Titan booth at MSG, aimed at pulling in a younger demographic.</p>
-              <p>it was a fast-moving, cross-functional build: my team worked in tandem with marketing and partnerships, shipping updates based on client feedback in near real time.</p>
-              <p>the vertical was eventually sunset, but the pace of that collaboration — build, ship, learn, adjust — was some of the best cross-functional work i did at Titan.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Titan</span> <span class="year">2025</span></h3>
-              <p>i had the pleasure of working with the agency Collins on Titan’s rebrand.</p>
-              <p>as the most senior designer on the team, i took their brand guidelines and translated them into the product, building the design system alongside our lead engineer.</p>
-              <p>i then extended the brand through two new visual systems: app-wide icons and illustrations for our investment strategies and money movement flows. i hired and directed an icon designer myself, and collaborated closely with a Collins-recommended illustrator to shape the work, which eventually became part of the system itself.</p>
-              <p>directing that icon and illustration work pushed me outside my usual product-design lane, and gave me an appreciation for all the work that goes into creating a sophisticated brand.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Titan</span> <span class="year">2023</span></h3>
-              <p>Smart Cash was Titan's cash product — something like a high-yield savings account, but more tax-efficient and higher-yielding thanks to treasury bonds, and built to let clients move money straight into investments.</p>
-              <p>under the creative direction of our head of design, i designed the landing pages for funded and unfunded clients, as well as flows for referrals and money movements — each with its own small details and edge cases to work through.</p>
-              <p>it taught me to zoom out and think about everything a new product touches on its way to market.</p>
-              <p>Smart Cash went on to become one of Titan's most successful launches, driving over 30% of our AUM.</p>
-            </div>
-          </li>
-
-          <li class="project">
-            <div class="project-media" aria-hidden="true"></div>
-            <div class="project-copy">
-              <h3><span>Allara</span> <span class="year">2025</span></h3>
-              <p>Allara is a telehealth platform built for women navigating hard-to-treat hormonal and metabolic conditions.</p>
-              <p>Allara approached me to help build a design system for their client-facing portal. they had no in-house designer at the time (just a PM), and prototyping new ideas was slow going without one. a system meant both polish and speed, and it would ideally let non-designers contribute more easily too.</p>
-              <p>i built the whole thing by hand, with ChatGPT only for naming conventions.</p>
-              <p>if i started this project today, i'd lean on AI a lot more and probably get further, faster. but there's something to building it manually first: it's part of why i trust myself with systems now.</p>
-            </div>
-          </li>
-        </ol>
+        <p class="lede">below is a sampling of work over the years. for the story behind the screens, <a href="mailto:melanietabroff@gmail.com">message me</a> and i’ll send you a link.</p>
+        <div class="placeholder-card" aria-hidden="true"></div>
       </section>
 
-      <section id="travel" class="section travel" aria-labelledby="travel-heading">
-        <h2 id="travel-heading" class="visually-hidden">travel</h2>
-        <p class="lede intro">earlier this year i stepped away from my computer to travel, teach yoga, and rediscover life’s joys. i’m hoping to bring more of that joy into the work itself.</p>
-
-        <div class="collage">
-          <div class="collage-col">
-            <img class="photo square" src="/src/assets/travel/yoga-studio.jpg" width="544" height="725" loading="lazy" decoding="async" alt="A yoga class sitting on cushions around candles in an open-air wooden studio">
-            <img class="photo tall" src="/src/assets/travel/snorkeling.jpg" width="932" height="816" loading="lazy" decoding="async" alt="Snorkelers swimming over a sea turtle in clear turquoise water">
-            <img class="photo tall" src="/src/assets/travel/city-skyline.jpg" width="544" height="725" loading="lazy" decoding="async" alt="A woman standing on a waterfront at dusk, looking across the water at a city skyline">
-            <img class="photo square" src="/src/assets/travel/sparkling-river.jpg" width="360" height="640" loading="lazy" decoding="async" alt="Sunlight sparkling on a river through the trees">
-          </div>
-          <div class="collage-col">
-            <img class="photo square" src="/src/assets/travel/offerings.jpg" width="360" height="480" loading="lazy" decoding="async" alt="Flower offerings in small woven baskets beneath banana leaves">
-            <img class="photo tall" src="/src/assets/travel/beach-sunset.jpg" width="544" height="725" loading="lazy" decoding="async" alt="Sunset over a tidal beach">
-            <img class="photo square" src="/src/assets/travel/hot-spring.jpg" width="360" height="640" loading="lazy" decoding="async" alt="An orange hot spring reflecting a forested hill">
-            <img class="photo tall" src="/src/assets/travel/backbend.jpg" width="544" height="892" loading="lazy" decoding="async" alt="A person in a yoga backbend on the grass in a park">
-          </div>
-        </div>
+      <!-- placeholder: polaroids get built in a later session -->
+      <section id="places" class="section placeholder-section" aria-labelledby="places-heading">
+        <h2 id="places-heading" class="visually-hidden">places</h2>
+        <p class="lede">earlier this year i stepped away from my computer to travel, teach yoga, and rediscover life’s joys. i’m hoping to bring more of that joy into the work itself.</p>
+        <div class="placeholder-card" aria-hidden="true"></div>
       </section>
 
-      <section id="contact" class="section contact" aria-labelledby="contact-heading">
+      <!-- placeholder: the full contact section gets built in a later session -->
+      <section id="contact" class="section placeholder-section contact" aria-labelledby="contact-heading">
         <h2 id="contact-heading" class="visually-hidden">contact</h2>
         <p class="lede">interested in working together? <a href="mailto:melanietabroff@gmail.com">let’s chat</a>.</p>
       </section>
     </main>
+
+    <!-- mobile only: Figma puts the toggle and links here on small screens -->
+    <footer class="site-footer">
+      <button class="theme-toggle" type="button" aria-label="switch theme">
+        <img class="icon-moon" src="/src/assets/icons/moon.svg" width="20" height="20" alt="">
+        <img class="icon-sun" src="/src/assets/icons/sun.svg" width="20" height="20" alt="">
+      </button>
+      <ul class="side-links">
+        <!-- TODO: resume + linkedin URLs not provided yet -->
+        <li><a aria-disabled="true">resume <span class="arrow" aria-hidden="true">↗</span></a></li>
+        <li><a href="mailto:melanietabroff@gmail.com">email <span class="arrow" aria-hidden="true">↗</span></a></li>
+        <li><a aria-disabled="true">linkedin <span class="arrow" aria-hidden="true">↗</span></a></li>
+      </ul>
+    </footer>
   </div>
 
   <script type="module" src="/src/main.js"></script>

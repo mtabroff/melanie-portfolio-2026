@@ -1,30 +1,5 @@
 :root {
-  --text: #101010;
-  --text-h: #101010;
-  --text-secondary: #9f9f9f;
-  --text-tertiary: #cfcfcf;
-  --text-project: #1b1b1b;
-  --text-project-muted: rgba(27, 27, 27, 0.3);
-  --bg: #ffffff;
-  --placeholder: #f6f5f3;
-
-  --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-
-  /* layout */
-  --edge: 48px;          /* distance of pinned nav / right side from the viewport edge */
-  --column: 552px;       /* centered content column */
-  --gutter: 24px;        /* side padding around the column */
-  --radius: 24px;
-  --side-copy: 173px;    /* project text column, left of the work squares */
-  --side-copy-gap: 36px;
-
-  /* motion */
-  --fade-slow: 1.4s;
-  --avatar-fade: 0.2s;
-
-  color-scheme: light;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--text-primary);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -45,16 +20,13 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background: var(--bg);
 }
 
 body {
-  font-family: var(--sans);
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 1.4;
-  letter-spacing: -0.464px;
-  color: var(--text);
+  background: var(--surface-page);
+  font: var(--type-body-large);
+  letter-spacing: var(--tracking-body-large);
+  color: var(--text-primary);
 }
 
 img {
@@ -77,8 +49,17 @@ a {
   color: inherit;
 }
 
-a:focus-visible {
-  outline: 2px solid var(--text);
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--text-primary);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -104,56 +85,58 @@ a:focus-visible {
 
 .skip-link {
   position: absolute;
-  left: 16px;
+  left: var(--space-2);
   top: -100px;
   z-index: 100;
-  padding: 8px 12px;
-  background: var(--bg);
-  font-size: 14px;
+  padding: var(--space-1) var(--gap-side-links);
+  background: var(--surface-page);
+  font: var(--type-body-small);
 }
 
 .skip-link:focus {
-  top: 16px;
+  top: var(--space-2);
 }
 
+/* ---------- shell: three columns, with the side rails stuck to the viewport ---------- */
+
 #app {
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, var(--column)) 1fr;
   min-height: 100svh;
-  background: var(--bg);
+}
+
+.site-nav,
+.side-right {
+  grid-row: 1;
+  position: sticky;
+  z-index: 10;
+  top: var(--edge);
+  align-self: start;
+  height: calc(100svh - 2 * var(--edge));
+}
+
+main {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
 }
 
 /* ---------- avatar (shared) ---------- */
 
 .avatar {
-  width: 72px;
-  height: 72px;
+  width: var(--avatar-hero);
+  height: var(--avatar-hero);
   border-radius: 50%;
   object-fit: cover;
 }
 
-/*
- * Only one avatar is visible at a time. The outgoing one fades out first and
- * the incoming one fades in after it (transition-delay), so they never overlap.
- * The hero avatar keeps its space when hidden, so the layout never shifts.
- */
-.hero-avatar {
-  transition: opacity var(--avatar-fade) ease var(--avatar-fade);
-}
-
-.is-scrolled .hero-avatar {
-  opacity: 0;
-  transition-delay: 0s;
-}
-
-/* ---------- left navigation ---------- */
+/* ---------- side nav ---------- */
 
 .site-nav {
-  position: fixed;
-  z-index: 10;
-  top: var(--edge);
-  bottom: var(--edge);
-  left: var(--edge);
-  width: 48px;
+  grid-column: 1;
+  justify-self: start;
+  margin-left: var(--edge);
+  width: var(--space-6);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -173,16 +156,8 @@ a:focus-visible {
 }
 
 .nav-avatar .avatar {
-  width: 48px;
-  height: 48px;
-}
-
-.is-scrolled .nav-avatar {
-  opacity: 1;
-  visibility: visible;
-  transition:
-    opacity var(--avatar-fade) ease var(--avatar-fade),
-    visibility 0s linear var(--avatar-fade);
+  width: var(--avatar-nav);
+  height: var(--avatar-nav);
 }
 
 .nav-avatar:focus-visible {
@@ -192,16 +167,15 @@ a:focus-visible {
 .nav-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-half);
 }
 
 .nav-list a {
   display: block;
   width: fit-content;
-  padding: 4px 0;
-  font-size: 12px;
-  line-height: 1.2;
-  letter-spacing: -0.2px;
+  padding-block: var(--space-half);
+  font: var(--type-label);
+  letter-spacing: var(--tracking-label);
   color: var(--text-secondary);
   text-decoration: none;
   white-space: nowrap;
@@ -210,24 +184,52 @@ a:focus-visible {
 
 .nav-list a:hover,
 .nav-list a[aria-current='true'] {
-  color: var(--text);
+  color: var(--text-primary);
 }
 
-/* ---------- right side ---------- */
+/* ---------- theme toggle ---------- */
+
+.theme-toggle {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* Keeps the 20px icon from Figma, with a comfortable tap area around it. */
+.theme-toggle::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+.site-nav .theme-toggle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.theme-toggle .icon-sun,
+:root[data-theme='dark'] .theme-toggle .icon-moon {
+  display: none;
+}
+
+:root[data-theme='dark'] .theme-toggle .icon-sun {
+  display: block;
+}
+
+/* ---------- side info ---------- */
 
 .side-right {
-  position: fixed;
-  z-index: 10;
-  top: var(--edge);
-  bottom: var(--edge);
-  right: var(--edge);
+  grid-column: 3;
+  justify-self: end;
+  margin-right: var(--edge);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
-  font-size: 12.48px;
-  line-height: 18.72px;
-  letter-spacing: -0.2px;
+  font: var(--type-label);
+  letter-spacing: var(--tracking-label);
   color: var(--text-secondary);
   text-align: right;
 }
@@ -236,33 +238,42 @@ a:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: var(--space-1);
 }
 
 .weather-temp {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-half);
+  white-space: nowrap;
+}
+
+/* Painted through a mask so the icon follows the text color in both themes. */
+.weather-icon {
+  flex-shrink: 0;
+  width: 10.7585px;
+  height: 12px;
+  background: currentColor;
+  mask: url('./assets/weather.svg') center / contain no-repeat;
 }
 
 .side-links {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12px;
-  font-size: 12px;
-  line-height: 14px;
+  gap: var(--gap-side-links);
 }
 
 .side-links a {
   display: inline-flex;
   align-items: center;
-  gap: 6.4px;
+  gap: var(--gap-link-arrow);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .side-links a[href]:hover {
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .side-links a[aria-disabled='true'] {
@@ -271,37 +282,36 @@ a:focus-visible {
 
 .side-links .arrow {
   display: inline-block;
-  width: 8px;
-  font-size: 12px;
+  width: var(--space-1);
+  font-size: var(--space-1); /* the fallback arrow is 1em wide, so this keeps it inside its 8px box */
   line-height: 12px;
 }
 
-/* ---------- sections + centered column ---------- */
+/* ---------- mobile footer: hidden on desktop, where SideNav and SideInfo hold these ---------- */
 
-main {
-  width: 100%;
+.site-footer {
+  display: none;
 }
 
+/* ---------- sections ---------- */
+
 .section {
-  width: min(calc(var(--column) + 2 * var(--gutter)), 100%);
-  margin: 0 auto;
   padding-inline: var(--gutter);
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--sans);
+  font-family: var(--font-sans);
   font-weight: 400;
-  color: var(--text-h);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .lede {
-  font-size: 20px;
-  line-height: 1.4;
-  letter-spacing: -0.464px;
-  color: var(--text);
+  font: var(--type-body-large);
+  letter-spacing: var(--tracking-body-large);
+  color: var(--text-primary);
 }
 
 /* ---------- about / hero ---------- */
@@ -317,296 +327,177 @@ h3 {
 .hero-header {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding-block: 8px;
+  gap: var(--space-3);
+  padding-block: var(--space-1);
 }
 
 h1 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  column-gap: 8px;
-  font-size: 24px;
-  line-height: 1.4;
-  letter-spacing: -0.464px;
-  text-transform: lowercase;
+  column-gap: var(--space-1);
+  font: var(--type-display);
+  letter-spacing: var(--tracking-display);
+}
+
+h1 .name {
+  font: var(--type-display-medium);
 }
 
 h1 .divider {
   font-weight: 200;
-  font-size: 23.2px;
   color: var(--text-tertiary);
 }
 
-h1 .role {
-  font-weight: 500;
-}
-
 .hero .lede {
-  padding-top: 24px;
+  padding-top: var(--space-3);
 }
 
-/* ---------- work ---------- */
+/* ---------- placeholders: work, places, and contact get built in later sessions ---------- */
 
-.work {
-  padding-block: 100px;
-}
-
-.intro {
-  padding-bottom: 48px;
-}
-
-.projects {
+.placeholder-section {
+  min-height: 100svh;
+  padding-block: var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-6);
 }
 
-.project {
-  position: relative;
+.placeholder-card {
+  height: var(--height-card);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
 }
-
-.project-media {
-  width: 100%;
-  max-width: var(--column);
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius);
-  background: var(--placeholder);
-}
-
-.project-copy {
-  font-size: 12px;
-  line-height: normal;
-  letter-spacing: normal;
-  color: var(--text-project);
-}
-
-.project-copy h3 {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: normal;
-  color: var(--text-project);
-}
-
-.project-copy .year {
-  color: var(--text-project-muted);
-}
-
-.project-copy p + p {
-  margin-top: 1.2em; /* one blank line, as in Figma */
-}
-
-/* ---------- travel ---------- */
-
-.travel {
-  padding-block: 100px;
-}
-
-.collage {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  align-items: start;
-}
-
-.collage-col {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.photo {
-  width: 100%;
-  height: auto; /* let aspect-ratio win over the width/height attributes */
-  object-fit: cover;
-  border-radius: var(--radius);
-  background: var(--placeholder);
-}
-
-.photo.square {
-  aspect-ratio: 1 / 1;
-}
-
-.photo.tall {
-  aspect-ratio: 2 / 3;
-}
-
-/* ---------- contact ---------- */
 
 .contact {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  padding-top: 24px;
 }
 
-/* ---------- desktop: project copy sits to the left of each square ---------- */
+/* ---------- desktop only: one avatar at a time, as SideNav's Hero variant shows ---------- */
 
-@media (min-width: 1200px) {
-  .project-copy {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: calc(100% + var(--side-copy-gap));
-    width: var(--side-copy);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+@media (min-width: 960px) {
+  /*
+   * The outgoing avatar fades out first and the incoming one fades in after it
+   * (transition-delay), so they never overlap. The hero avatar keeps its space
+   * when hidden, so the layout never shifts.
+   */
+  .hero-avatar {
+    transition: opacity var(--avatar-fade) ease var(--avatar-fade);
+  }
+
+  .is-scrolled .hero-avatar {
     opacity: 0;
-    transition: opacity var(--fade-slow) cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: 0s;
   }
 
-  .project.is-centered .project-copy {
+  .is-scrolled .nav-avatar {
     opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--avatar-fade) ease var(--avatar-fade),
+      visibility 0s linear var(--avatar-fade);
   }
 }
 
-/* ---------- mid widths: copy stacks under each square ---------- */
-
-@media (max-width: 1199px) {
-  .projects {
-    gap: 48px;
-  }
-
-  .project-copy {
-    max-width: var(--column);
-    margin-top: 16px;
-    font-size: 14px;
-  }
-
-  .project-copy h3 {
-    font-size: 14px;
-  }
-}
-
-/* ---------- small screens: nav becomes a top bar, right side moves to the footer ---------- */
+/* ---------- mobile: nav becomes a top bar, toggle and links move to the footer ---------- */
 
 @media (max-width: 959px) {
-  :root {
-    --bar-height: 56px;
-  }
-
   #app {
-    display: flex;
-    flex-direction: column;
+    display: block;
   }
 
   .site-nav {
-    position: sticky;
-    order: 0;
     top: 0;
-    bottom: auto;
-    left: auto;
-    width: 100%;
-    height: var(--bar-height);
+    justify-self: stretch;
+    width: auto;
+    height: var(--topbar-height);
+    margin: 0;
+    padding: var(--space-2) var(--gutter) 0;
     flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 16px;
-    padding-inline: var(--gutter);
-    background: var(--bg);
+    align-items: flex-start;
+    justify-content: flex-end;
+    background: var(--surface-topbar-fade);
+    pointer-events: none; /* the fade shouldn't block taps on the content under it */
   }
 
-  .nav-avatar {
-    position: static;
-    flex-shrink: 0;
-  }
-
-  .nav-avatar .avatar {
-    width: 32px;
-    height: 32px;
+  .nav-avatar,
+  .site-nav .theme-toggle,
+  .side-right {
+    display: none;
   }
 
   .nav-list {
     flex-direction: row;
-    gap: 16px;
+    gap: var(--space-2);
+    pointer-events: auto;
   }
 
   .nav-list a {
-    font-size: 14px;
+    position: relative;
+    padding-block: 0;
   }
 
-  main {
-    order: 1;
+  /* Larger tap area without changing the spacing from Figma. */
+  .nav-list a::after {
+    content: '';
+    position: absolute;
+    inset: -12px calc(-1 * var(--space-1));
   }
 
-  .side-right {
-    position: static;
-    order: 2;
+  .site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--gutter);
+    font: var(--type-label);
+    letter-spacing: var(--tracking-label);
+    color: var(--text-secondary);
+  }
+
+  .site-footer .side-links {
     flex-direction: row;
-    align-items: flex-end;
-    gap: 24px;
-    padding: 24px var(--gutter) var(--gutter);
-    text-align: left;
-  }
-
-  .weather {
-    align-items: flex-start;
+    gap: var(--space-2);
   }
 
   .section {
-    scroll-margin-top: var(--bar-height);
+    scroll-margin-top: var(--topbar-height);
   }
 
   .hero {
-    min-height: calc(100svh - var(--bar-height));
-    padding-block: 48px;
-  }
-
-  .contact {
-    min-height: calc(100svh - var(--bar-height));
-  }
-}
-
-@media (max-width: 640px) {
-  body,
-  .lede {
-    font-size: 18px;
+    min-height: 0;
+    padding-block: var(--space-6);
+    gap: var(--space-2);
   }
 
   .hero-header {
-    gap: 16px;
-  }
-
-  .hero-header .avatar {
-    width: 56px;
-    height: 56px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding-block: 0;
   }
 
   h1 {
     flex-direction: column;
     align-items: flex-start;
-    font-size: 20px;
+    row-gap: 2px;
   }
 
   h1 .divider {
     display: none;
   }
 
-  .work,
-  .travel {
-    padding-block: 64px;
+  .hero .lede {
+    padding-top: 0;
   }
 
-  .intro {
-    padding-bottom: 32px;
-  }
-
-  .photo {
-    border-radius: 16px;
+  .placeholder-section {
+    padding-block: var(--space-6);
+    min-height: calc(100svh - var(--topbar-height));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-
-  :root {
-    --fade-slow: 0.4s;
   }
 }
