@@ -333,28 +333,11 @@ h3 {
 }
 
 h1 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--space-1);
-  font: var(--type-display);
+  font: var(--type-display-medium);
   letter-spacing: var(--tracking-display);
 }
 
-h1 .role {
-  font: var(--type-display-medium);
-}
-
-h1 .divider {
-  font-weight: 200;
-  color: var(--text-tertiary);
-}
-
 .hero .lede {
-  padding-top: var(--space-2);
-}
-
-.hero .hero-header + .lede {
   padding-top: var(--space-3);
 }
 
@@ -1138,23 +1121,7 @@ html:has(.place-modal[open]) {
     padding-block: 0;
   }
 
-  h1 {
-    flex-direction: column;
-    align-items: flex-start;
-    row-gap: 2px;
-  }
-
-  h1 .name {
-    font: var(--type-display-medium);
-  }
-
-  h1 .divider,
-  h1 .role {
-    display: none;
-  }
-
-  .hero .lede,
-  .hero .hero-header + .lede {
+  .hero .lede {
     padding-top: 0;
   }
 
