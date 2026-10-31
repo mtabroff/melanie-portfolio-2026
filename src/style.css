@@ -432,26 +432,9 @@ h3 {
   transform: rotateY(180deg);
 }
 
-/* Sits in the space above the intro, so it doesn't move anything from Figma's layout. */
-.hero-flip-hint {
-  position: absolute;
-  top: calc(343.96 * var(--polaroid-unit) + var(--gap-side-links));
-  left: calc(10.84 * var(--polaroid-unit));
-  width: calc(240 * var(--polaroid-unit));
-  font: var(--type-label);
-  letter-spacing: var(--tracking-label);
-  color: var(--text-secondary);
-  text-align: center;
-  transition: color 0.3s ease;
-}
-
 @media (hover: hover) {
   .hero-polaroid:hover .hero-polaroid-tilt {
     transform: rotate(var(--hero-tilt));
-  }
-
-  .hero-polaroid:hover .hero-flip-hint {
-    color: var(--text-primary);
   }
 }
 
