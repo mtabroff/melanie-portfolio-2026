@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Homemade Apple';
+  src: url('./assets/fonts/homemade-apple.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
 /*
  * Design tokens, pulled from the "02 · system" page in Figma.
  * Figma has no dark mode yet, so the dark values below are proposals, not Figma values.
@@ -15,6 +22,9 @@
   --text-project: #1b1b1b;                  /* same: hardcoded on SideColumn in Figma */
   --text-project-muted: rgba(27, 27, 27, 0.3);
   --surface-overlay-fill: rgba(255, 255, 255, 0.94);
+  --surface-modal-fill: #ffffff;
+  --surface-placeholder-fill: #ebebeb;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
 
   color-scheme: light;
 
@@ -25,6 +35,12 @@
   --surface-page: var(--surface-z0);
   --surface-card: var(--surface-card-fill);
   --surface-overlay: var(--surface-overlay-fill);
+  --surface-modal: var(--surface-modal-fill);
+  --surface-placeholder: var(--surface-placeholder-fill);
+  /* Polaroids are physical objects, so they stay white in dark mode too. */
+  --surface-polaroid: #ffffff;
+  --surface-polaroid-border: #dbdbdb;
+  --surface-polaroid-photo: #ebebeb;
   --surface-topbar-fade: linear-gradient(
     to bottom,
     var(--surface-z0) 0%,
@@ -34,7 +50,7 @@
 
   /* ---------- type: desktop (Figma letter spacing is in %, so 1% = 0.01em) ---------- */
   --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-accent: 'Homemade Apple', cursive; /* not loaded yet: comes with the places section */
+  --font-accent: 'Homemade Apple', cursive;
 
   --type-display: 400 24px/1.3 var(--font-sans);
   --type-display-medium: 500 24px/1.3 var(--font-sans);
@@ -43,6 +59,8 @@
   --type-label: 400 12px/16px var(--font-sans);
   --type-label-medium: 500 12px/16px var(--font-sans);
   --type-accent: 400 14px/1.2 var(--font-accent);
+  --type-modal-title: 400 20px/1.2 var(--font-sans);
+  --type-modal-description: 400 16px/1.2 var(--font-sans);
 
   --tracking-display: -0.02em;
   --tracking-body-large: -0.02em;
@@ -80,6 +98,9 @@
   --hero-cue-space: 98px;  /* keeps the intro clear of the cue */
   --panel-width: 173px;
   --panel-gap: var(--space-5);
+  --polaroid-unit: 1px;    /* the stack is drawn in Figma's desktop pixels and scaled by this */
+  --place-row-odd: 104px;
+  --place-row-even: 176px;
 
   /* ---------- motion ---------- */
   --avatar-fade: 0.2s;
@@ -93,10 +114,15 @@
     --type-display-medium: 500 22px/1.3 var(--font-sans);
     --type-body-large: 400 16px/1.4 var(--font-sans);
     --type-accent: 400 12px/1.2 var(--font-accent);
+    --type-modal-title: 400 18px/1.2 var(--font-sans);
+    --type-modal-description: 400 14px/1.2 var(--font-sans);
 
     --gutter: 20px;
     --avatar-hero: var(--space-8);
     --radius-card: var(--space-3);
+    --polaroid-unit: 0.85px;
+    --place-row-odd: var(--space-3);
+    --place-row-even: 72px;
   }
 }
 
@@ -117,6 +143,9 @@
     --text-project: #f2f2f2;
     --text-project-muted: rgba(242, 242, 242, 0.3);
     --surface-overlay-fill: rgba(16, 16, 16, 0.94);
+    --surface-modal-fill: #1a1a1a;
+    --surface-placeholder-fill: #2a2a2a;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 
     color-scheme: dark;
   }
@@ -133,6 +162,9 @@
   --text-project: #f2f2f2;
   --text-project-muted: rgba(242, 242, 242, 0.3);
   --surface-overlay-fill: rgba(16, 16, 16, 0.94);
+  --surface-modal-fill: #1a1a1a;
+  --surface-placeholder-fill: #2a2a2a;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 
   color-scheme: dark;
 }

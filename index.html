@@ -245,11 +245,78 @@
         </ol>
       </section>
 
-      <!-- placeholder: polaroids get built in a later session -->
-      <section id="places" class="section placeholder-section" aria-labelledby="places-heading">
+      <section id="places" class="section places" aria-labelledby="places-heading">
         <h2 id="places-heading" class="visually-hidden">places</h2>
         <p class="lede">earlier this year i stepped away from my computer to travel, teach yoga, and rediscover life’s joys. i’m hoping to bring more of that joy into the work itself.</p>
-        <div class="placeholder-card" aria-hidden="true"></div>
+        <ul class="places-list">
+          <li class="place-row">
+            <button class="polaroid-stack" type="button" aria-haspopup="dialog" aria-controls="place-japan" aria-label="open photos from Japan, 2026">
+              <span class="polaroid polaroid-back-left">
+                <span class="polaroid-photo"><img src="/src/assets/places/japan-food.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Japan 2026</span>
+              </span>
+              <span class="polaroid polaroid-back-right">
+                <span class="polaroid-photo"><img src="/src/assets/places/japan-temple.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Japan 2026</span>
+              </span>
+              <span class="polaroid polaroid-front">
+                <span class="polaroid-photo"><img src="/src/assets/places/japan-bridge.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Japan 2026</span>
+              </span>
+            </button>
+          </li>
+
+          <li class="place-row">
+            <button class="polaroid-stack" type="button" aria-haspopup="dialog" aria-controls="place-seoul" aria-label="open photos from Seoul, 2026">
+              <span class="polaroid polaroid-back-left">
+                <span class="polaroid-photo"><img src="/src/assets/places/seoul-hanok.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Seoul 2026</span>
+              </span>
+              <span class="polaroid polaroid-back-right">
+                <span class="polaroid-photo"><img src="/src/assets/places/seoul-river-bridge.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Seoul 2026</span>
+              </span>
+              <span class="polaroid polaroid-front">
+                <span class="polaroid-photo"><img src="/src/assets/places/seoul-skyline.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Seoul 2026</span>
+              </span>
+            </button>
+          </li>
+
+          <li class="place-row">
+            <button class="polaroid-stack" type="button" aria-haspopup="dialog" aria-controls="place-bali" aria-label="open photos from Bali, 2026">
+              <span class="polaroid polaroid-back-left">
+                <span class="polaroid-photo"><img src="/src/assets/places/bali-offerings.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Bali 2026</span>
+              </span>
+              <span class="polaroid polaroid-back-right">
+                <span class="polaroid-photo"><img src="/src/assets/places/bali-yoga.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Bali 2026</span>
+              </span>
+              <span class="polaroid polaroid-front">
+                <span class="polaroid-photo"><img src="/src/assets/places/bali-sunset.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Bali 2026</span>
+              </span>
+            </button>
+          </li>
+
+          <li class="place-row">
+            <button class="polaroid-stack" type="button" aria-haspopup="dialog" aria-controls="place-wyoming" aria-label="open photos from Wyoming, 2026">
+              <span class="polaroid polaroid-back-left">
+                <span class="polaroid-photo"></span>
+                <span class="polaroid-caption">Wyoming 2026</span>
+              </span>
+              <span class="polaroid polaroid-back-right">
+                <span class="polaroid-photo"></span>
+                <span class="polaroid-caption">Wyoming 2026</span>
+              </span>
+              <span class="polaroid polaroid-front">
+                <span class="polaroid-photo"><img src="/src/assets/places/wyoming-hot-spring.jpg" loading="lazy" alt=""></span>
+                <span class="polaroid-caption">Wyoming 2026</span>
+              </span>
+            </button>
+          </li>
+        </ul>
       </section>
 
       <!-- placeholder: the full contact section gets built in a later session -->
@@ -258,6 +325,107 @@
         <p class="lede">interested in working together? <a href="mailto:melanietabroff@gmail.com">let’s chat</a>.</p>
       </section>
     </main>
+
+    <!-- one modal per place: add a photo by adding a .place-photo, empty ones show as placeholders -->
+    <dialog class="place-modal" id="place-japan" aria-labelledby="place-japan-title" aria-describedby="place-japan-description">
+      <div class="place-modal-panel">
+        <header class="place-modal-header">
+          <div class="place-modal-title">
+            <h3 id="place-japan-title">Japan · 2026</h3>
+            <p id="place-japan-description">everything around me felt designed with care.</p>
+          </div>
+          <button class="place-modal-close" type="button">
+            close
+            <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
+          </button>
+        </header>
+        <div class="place-modal-body">
+          <div class="place-modal-scroll" tabindex="0" aria-label="photos from Japan">
+            <div class="place-photos">
+              <div class="place-photo"><img src="/src/assets/places/japan-food.jpg" loading="lazy" alt="A bowl of curry and rice with pickled vegetables on a wooden table"></div>
+              <div class="place-photo"><img src="/src/assets/places/japan-temple.jpg" loading="lazy" alt="A multi-tiered temple among trees under a blue sky"></div>
+              <div class="place-photo"><img src="/src/assets/places/japan-bridge.jpg" loading="lazy" alt="A red bridge crossing a teal river between forested mountains"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="place-modal" id="place-seoul" aria-labelledby="place-seoul-title" aria-describedby="place-seoul-description">
+      <div class="place-modal-panel">
+        <header class="place-modal-header">
+          <div class="place-modal-title">
+            <h3 id="place-seoul-title">Seoul · 2026</h3>
+            <p id="place-seoul-description">a big city that somehow felt cozy.</p>
+          </div>
+          <button class="place-modal-close" type="button">
+            close
+            <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
+          </button>
+        </header>
+        <div class="place-modal-body">
+          <div class="place-modal-scroll" tabindex="0" aria-label="photos from Seoul">
+            <div class="place-photos">
+              <div class="place-photo"><img src="/src/assets/places/seoul-hanok.jpg" loading="lazy" alt="A quiet lane between traditional hanok houses"></div>
+              <div class="place-photo"><img src="/src/assets/places/seoul-river-bridge.jpg" loading="lazy" alt="A crowd by the river photographing the sunset beneath a large bridge"></div>
+              <div class="place-photo"><img src="/src/assets/places/seoul-skyline.jpg" loading="lazy" alt="A person on the riverbank at dusk, looking across the water at the city skyline"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="place-modal" id="place-bali" aria-labelledby="place-bali-title" aria-describedby="place-bali-description">
+      <div class="place-modal-panel">
+        <header class="place-modal-header">
+          <div class="place-modal-title">
+            <h3 id="place-bali-title">Bali · 2026</h3>
+            <p id="place-bali-description">felt the most at peace in my body, and with life.</p>
+          </div>
+          <button class="place-modal-close" type="button">
+            close
+            <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
+          </button>
+        </header>
+        <div class="place-modal-body">
+          <div class="place-modal-scroll" tabindex="0" aria-label="photos from Bali">
+            <div class="place-photos">
+              <div class="place-photo"><img src="/src/assets/places/bali-offerings.jpg" loading="lazy" alt="Flower offerings in small woven baskets beneath banana leaves"></div>
+              <div class="place-photo"><img src="/src/assets/places/bali-yoga.jpg" loading="lazy" alt="A yoga class sitting on cushions around candles in an open-air wooden studio"></div>
+              <div class="place-photo"><img src="/src/assets/places/bali-sunset.jpg" loading="lazy" alt="Sunset over a tidal beach"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="place-modal" id="place-wyoming" aria-labelledby="place-wyoming-title" aria-describedby="place-wyoming-description">
+      <div class="place-modal-panel">
+        <header class="place-modal-header">
+          <div class="place-modal-title">
+            <h3 id="place-wyoming-title">Wyoming · 2026</h3>
+            <p id="place-wyoming-description">felt like a movie set. or another planet.</p>
+          </div>
+          <button class="place-modal-close" type="button">
+            close
+            <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
+          </button>
+        </header>
+        <div class="place-modal-body">
+          <div class="place-modal-scroll" tabindex="0" aria-label="photos from Wyoming">
+            <div class="place-photos">
+              <div class="place-photo"><img src="/src/assets/places/wyoming-hot-spring.jpg" loading="lazy" alt="An orange hot spring reflecting a forested hill"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+              <div class="place-photo" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
 
     <!-- mobile only: Figma puts the toggle and links here on small screens -->
     <footer class="site-footer">

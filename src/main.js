@@ -1,5 +1,5 @@
 // Scroll-driven behavior (active nav state, avatar placement, work side panel),
-// the work card reveal, and the theme toggle.
+// the work card reveal, the place modals, and the theme toggle.
 // (Still to come later: weather widget.)
 
 const app = document.getElementById('app')
@@ -113,6 +113,45 @@ document.addEventListener('keydown', (event) => {
 panelLayout.addEventListener('change', () => {
   closeReveals()
   requestUpdate()
+})
+
+// Place modals. <dialog> handles Esc, the focus trap, and returning focus on close.
+function updateModalFade(dialog) {
+  const scroller = dialog.querySelector('.place-modal-scroll')
+  const remaining = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop
+  dialog.querySelector('.place-modal-body').classList.toggle('has-more', remaining > 1)
+}
+
+for (const stack of document.querySelectorAll('.polaroid-stack')) {
+  const dialog = document.getElementById(stack.getAttribute('aria-controls'))
+  stack.addEventListener('click', () => {
+    const root = document.documentElement
+    root.style.setProperty('--page-scrollbar', `${window.innerWidth - root.clientWidth}px`)
+    dialog.showModal()
+    dialog.querySelector('.place-modal-scroll').scrollTop = 0
+    updateModalFade(dialog)
+  })
+}
+
+for (const dialog of document.querySelectorAll('.place-modal')) {
+  const scroller = dialog.querySelector('.place-modal-scroll')
+  scroller.addEventListener('scroll', () => updateModalFade(dialog), { passive: true })
+  dialog.querySelector('.place-modal-close').addEventListener('click', () => dialog.close())
+
+  // Outside clicks land on the dialog itself. Checking where the press began too means
+  // dragging to select text and letting go past the edge doesn't close it.
+  let pressedOutside = false
+  dialog.addEventListener('pointerdown', (event) => {
+    pressedOutside = event.target === dialog
+  })
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog && pressedOutside) dialog.close()
+  })
+}
+
+window.addEventListener('resize', () => {
+  const open = document.querySelector('.place-modal[open]')
+  if (open) updateModalFade(open)
 })
 
 // Theme. The inline script in index.html sets the starting theme before first paint.

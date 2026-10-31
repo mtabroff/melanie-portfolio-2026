@@ -697,7 +697,290 @@ h1 .divider {
   }
 }
 
-/* ---------- placeholders: work, places, and contact get built in later sessions ---------- */
+/* ---------- places ---------- */
+
+.places {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-block: 100px;
+}
+
+.places-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* The min() keeps the stack on screen on very narrow phones. */
+.place-row {
+  --stack-width: calc(268.467 * var(--polaroid-unit));
+  padding-left: min(var(--place-row-odd), 100% - var(--stack-width));
+}
+
+.place-row:nth-child(even) {
+  padding-left: min(var(--place-row-even), 100% - var(--stack-width));
+}
+
+.polaroid-stack {
+  position: relative;
+  display: block;
+  width: var(--stack-width);
+  height: calc(351.922 * var(--polaroid-unit));
+}
+
+/* A polaroid is 240 x 320 in Figma. Its resting and fanned positions come from PolaroidStack. */
+.polaroid {
+  position: absolute;
+  top: calc(23.97 * var(--polaroid-unit));
+  left: calc(10.85 * var(--polaroid-unit));
+  width: calc(240 * var(--polaroid-unit));
+  height: calc(320 * var(--polaroid-unit));
+  overflow: hidden;
+  border: 0.37px solid var(--surface-polaroid-border);
+  background: var(--surface-polaroid);
+  box-shadow:
+    4.729px 4.729px 9.459px rgba(0, 0, 0, 0.04),
+    0.473px 0.473px 9.459px 1.892px rgba(0, 0, 0, 0.04);
+  transform: translate(calc(var(--x, 0) * var(--polaroid-unit)), calc(var(--y, 0) * var(--polaroid-unit))) rotate(var(--r, 0deg));
+  transition:
+    transform 250ms ease-out,
+    box-shadow 250ms ease-out;
+}
+
+.polaroid-back-left {
+  --x: -1.85;
+  --y: -23.97;
+  --r: -5.65deg;
+}
+
+.polaroid-back-right {
+  --x: 7.14;
+  --y: -3.98;
+  --r: -11deg;
+}
+
+.polaroid-photo {
+  position: absolute;
+  top: calc(19.62 * var(--polaroid-unit));
+  left: calc(9.63 * var(--polaroid-unit));
+  width: calc(220 * var(--polaroid-unit));
+  height: calc(220 * var(--polaroid-unit));
+  background: var(--surface-polaroid-photo);
+}
+
+.polaroid-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.polaroid-caption {
+  position: absolute;
+  top: calc(239.65 * var(--polaroid-unit));
+  left: 0;
+  width: 100%;
+  height: calc(80 * var(--polaroid-unit));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: var(--type-accent);
+  letter-spacing: var(--tracking-accent);
+  color: #9f9f9f; /* Text/Secondary: the polaroid stays white, so this doesn't change with the theme */
+  white-space: nowrap;
+}
+
+.polaroid-stack:focus-visible .polaroid-back-left {
+  --x: -31.85;
+  --r: -9deg;
+}
+
+.polaroid-stack:focus-visible .polaroid-back-right {
+  --x: 37.14;
+  --r: 15deg;
+}
+
+.polaroid-stack:focus-visible .polaroid-front {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  transform: translateY(-8px) scale(1.03);
+}
+
+@media (hover: hover) {
+  .polaroid-stack:hover .polaroid-back-left {
+    --x: -31.85;
+    --r: -9deg;
+  }
+
+  .polaroid-stack:hover .polaroid-back-right {
+    --x: 37.14;
+    --r: 15deg;
+  }
+
+  .polaroid-stack:hover .polaroid-front {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    transform: translateY(-8px) scale(1.03);
+  }
+}
+
+/* ---------- place modal ---------- */
+
+/* The padding fills the space the scrollbar leaves, so the page doesn't shift sideways. */
+html:has(.place-modal[open]) {
+  overflow: hidden;
+  padding-right: var(--page-scrollbar, 0);
+}
+
+.place-modal {
+  width: min(720px, 100vw - 2 * var(--space-2));
+  max-width: none;
+  max-height: calc(100svh - 2 * var(--edge));
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--space-3);
+  background: var(--surface-modal);
+  color: var(--text-primary);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+}
+
+.place-modal[open] {
+  display: flex;
+  flex-direction: column;
+  animation: place-modal-in 250ms ease-out;
+}
+
+.place-modal::backdrop {
+  background: rgba(0, 0, 0, 0.25);
+  animation: place-modal-in 250ms ease-out;
+}
+
+@keyframes place-modal-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.place-modal-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.place-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.place-modal-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.place-modal-title h3 {
+  font: var(--type-modal-title);
+  letter-spacing: var(--tracking-body-large);
+}
+
+.place-modal-title p {
+  font: var(--type-modal-description);
+  letter-spacing: var(--tracking-body-small);
+  color: var(--text-secondary);
+}
+
+.place-modal-close {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-half);
+  font: var(--type-body-small);
+  letter-spacing: var(--tracking-body-small);
+  line-height: 1.2;
+  color: var(--text-secondary);
+}
+
+.place-modal-close:hover {
+  color: var(--text-primary);
+}
+
+/* Larger tap area without changing the spacing from Figma. */
+.place-modal-close::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+.place-modal-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.place-modal-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 12px;
+}
+
+.place-modal-body::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 72px;
+  background: linear-gradient(to bottom, transparent, var(--surface-modal));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+
+/* Set from main.js while there's more to scroll to. */
+.place-modal-body.has-more::after {
+  opacity: 1;
+}
+
+.place-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+.place-photo {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface-placeholder);
+}
+
+.place-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The thin scrollbar from Figma. Reserving its 4px outside the column keeps the photos at full width. */
+@media (hover: hover) {
+  .place-modal-scroll {
+    margin-right: calc(-1 * var(--space-half));
+    scrollbar-gutter: stable;
+  }
+
+  .place-modal-scroll::-webkit-scrollbar {
+    width: var(--space-half);
+  }
+
+  .place-modal-scroll::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: var(--scrollbar-thumb);
+  }
+}
+
+/* ---------- placeholder: contact gets built in a later session ---------- */
 
 .placeholder-section {
   min-height: 100svh;
@@ -705,12 +988,6 @@ h1 .divider {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-}
-
-.placeholder-card {
-  height: var(--height-card);
-  border-radius: var(--radius-card);
-  background: var(--surface-card);
 }
 
 .contact {
@@ -832,6 +1109,28 @@ h1 .divider {
     padding-bottom: 0;
   }
 
+  .places {
+    padding-block: var(--space-6);
+  }
+
+  /* A sheet attached to the bottom of the screen, with one column of photos. */
+  .place-modal {
+    width: 100%;
+    max-width: var(--column);
+    max-height: calc(100svh - var(--topbar-height));
+    margin: auto auto 0;
+    border-radius: var(--space-3) var(--space-3) 0 0;
+  }
+
+  .place-modal-panel {
+    padding: var(--space-3) var(--gutter);
+  }
+
+  .place-photos {
+    grid-template-columns: 1fr;
+    gap: var(--gap-side-links);
+  }
+
   .hero-header {
     flex-direction: column;
     align-items: flex-start;
@@ -868,5 +1167,14 @@ h1 .divider {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .polaroid {
+    transition: none;
+  }
+
+  .place-modal[open],
+  .place-modal::backdrop {
+    animation: none;
   }
 }
