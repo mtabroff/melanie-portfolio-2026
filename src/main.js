@@ -1,8 +1,9 @@
 // Scroll-driven behavior (active nav state, work side panel), the hero polaroid flip,
-// the work card reveal, the place modals, and the theme toggle.
+// the work card reveal, the place pages, and the theme toggle.
 // (Still to come later: weather widget.)
 
-const sections = [...document.querySelectorAll('main > section[id]')]
+const root = document.documentElement
+const sections = [...document.querySelectorAll('#main > section[id]')]
 const navLinks = new Map(
   [...document.querySelectorAll('[data-nav]')].map((link) => [link.dataset.nav, link]),
 )
@@ -61,6 +62,7 @@ let ticking = false
 
 function update() {
   ticking = false
+  if (root.dataset.place) return // the list is hidden, so there's nothing to measure
   updateSections()
   updatePanel()
 }
@@ -121,44 +123,161 @@ panelLayout.addEventListener('change', () => {
   requestUpdate()
 })
 
-// Place modals. <dialog> handles Esc, the focus trap, and returning focus on close.
-function updateModalFade(dialog) {
-  const scroller = dialog.querySelector('.place-modal-scroll')
-  const remaining = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop
-  dialog.querySelector('.place-modal-body').classList.toggle('has-more', remaining > 1)
+// Place pages. Each place has its own URL, and the list stays in the page behind it,
+// so closing can bring back the exact spot it was opened from.
+const placeLinks = new Map(
+  [...document.querySelectorAll('a.polaroid-stack')].map((link) => [link.dataset.place, link]),
+)
+const placeViews = new Map(
+  [...document.querySelectorAll('.place-view')].map((view) => [view.dataset.place, view]),
+)
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+const siteTitle = document.title
+const STACK_NAME = 'place-stack'
+
+let currentPlace = null
+let listScrollY = null
+let transitionId = 0
+
+for (const [slug, view] of placeViews) {
+  view.querySelector('.place-view-stack').innerHTML = placeLinks.get(slug).innerHTML
+  view.querySelectorAll('.place-photo').forEach((photo, i) => photo.style.setProperty('--i', i))
+  view.querySelector('.place-view-close').addEventListener('click', closePlace)
 }
 
-for (const stack of document.querySelectorAll('.polaroid-stack')) {
-  const dialog = document.getElementById(stack.getAttribute('aria-controls'))
-  stack.addEventListener('click', () => {
-    const root = document.documentElement
-    root.style.setProperty('--page-scrollbar', `${window.innerWidth - root.clientWidth}px`)
-    dialog.showModal()
-    dialog.querySelector('.place-modal-scroll').scrollTop = 0
-    updateModalFade(dialog)
+function placeFromUrl() {
+  const match = window.location.pathname.match(/^\/places\/([^/]+)\/?$/)
+  return match && placeViews.has(match[1]) ? match[1] : null
+}
+
+function showPlace(slug) {
+  const previous = currentPlace
+  currentPlace = slug
+
+  for (const [key, view] of placeViews) view.hidden = key !== slug
+
+  if (slug) {
+    root.dataset.place = slug
+    document.title = `${placeViews.get(slug).querySelector('h1').textContent} · melanie joy tabroff`
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    placeViews.get(slug).querySelector('h1').focus({ preventScroll: true })
+    return
+  }
+
+  delete root.dataset.place
+  document.title = siteTitle
+  const link = placeLinks.get(previous)
+  if (listScrollY === null) link.scrollIntoView({ block: 'center', behavior: 'instant' })
+  else window.scrollTo({ top: listScrollY, behavior: 'instant' })
+  link.focus({ preventScroll: true })
+  history.scrollRestoration = 'auto'
+  update()
+}
+
+// A lazy image that hasn't loaded yet would fly across the screen as a blank polaroid.
+function stackImagesReady(stack) {
+  const images = [...stack.querySelectorAll('img')]
+  for (const image of images) image.loading = 'eager'
+  const decoded = images.map((image) => image.decode().catch(() => {}))
+  return Promise.race([Promise.all(decoded), new Promise((done) => setTimeout(done, 300))])
+}
+
+function clearStackMotion() {
+  root.classList.remove('place-opening', 'place-closing')
+  for (const stack of document.querySelectorAll('.polaroid-stack')) {
+    stack.style.viewTransitionName = ''
+  }
+}
+
+function goToPlace(slug, { animate = true } = {}) {
+  if (slug === currentPlace) return
+
+  const previous = currentPlace
+  if (slug && !previous) listScrollY = window.scrollY
+
+  clearStackMotion()
+  for (const view of placeViews.values()) view.classList.remove('is-cascading')
+
+  if (!animate) {
+    showPlace(slug)
+    return
+  }
+
+  // No View Transitions support: a plain fade on whatever is coming in.
+  if (!document.startViewTransition) {
+    showPlace(slug)
+    const incoming = slug ? placeViews.get(slug) : document.getElementById('app')
+    incoming.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
+    return
+  }
+
+  // Reduced motion, or one place straight to another: the default crossfade, nothing moves.
+  if (reducedMotion.matches || (slug && previous)) {
+    document.startViewTransition(() => showPlace(slug))
+    return
+  }
+
+  const opening = Boolean(slug)
+  const link = placeLinks.get(slug ?? previous)
+  const thumb = placeViews.get(slug ?? previous).querySelector('.place-view-stack')
+  const from = opening ? link : thumb
+  const to = opening ? thumb : link
+
+  root.classList.add(opening ? 'place-opening' : 'place-closing')
+  from.style.viewTransitionName = STACK_NAME
+  if (opening) placeViews.get(slug).classList.add('is-cascading')
+
+  const id = ++transitionId
+  const transition = document.startViewTransition(async () => {
+    from.style.viewTransitionName = ''
+    to.style.viewTransitionName = STACK_NAME
+    showPlace(slug)
+    await stackImagesReady(to)
+  })
+  transition.finished.finally(() => {
+    if (id === transitionId) clearStackMotion()
   })
 }
 
-for (const dialog of document.querySelectorAll('.place-modal')) {
-  const scroller = dialog.querySelector('.place-modal-scroll')
-  scroller.addEventListener('scroll', () => updateModalFade(dialog), { passive: true })
-  dialog.querySelector('.place-modal-close').addEventListener('click', () => dialog.close())
+function closePlace() {
+  // Opened from the list: step back, so the list isn't in the history twice.
+  if (history.state?.fromList) {
+    history.back()
+    return
+  }
+  history.pushState(null, '', '/')
+  goToPlace(null)
+}
 
-  // Outside clicks land on the dialog itself. Checking where the press began too means
-  // dragging to select text and letting go past the edge doesn't close it.
-  let pressedOutside = false
-  dialog.addEventListener('pointerdown', (event) => {
-    pressedOutside = event.target === dialog
-  })
-  dialog.addEventListener('click', (event) => {
-    if (event.target === dialog && pressedOutside) dialog.close()
+for (const [slug, link] of placeLinks) {
+  link.addEventListener('click', (event) => {
+    // Let a new-tab click or similar do what it normally does.
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    history.scrollRestoration = 'manual'
+    history.pushState({ fromList: true }, '', link.pathname)
+    goToPlace(slug)
   })
 }
 
-window.addEventListener('resize', () => {
-  const open = document.querySelector('.place-modal[open]')
-  if (open) updateModalFade(open)
+window.addEventListener('popstate', (event) => {
+  // Safari's swipe back has already animated by now, so don't animate on top of it.
+  goToPlace(placeFromUrl(), { animate: !event.hasUAVisualTransition })
 })
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && currentPlace) closePlace()
+})
+
+const initialPlace = placeFromUrl()
+if (initialPlace) {
+  history.scrollRestoration = 'manual'
+  showPlace(initialPlace)
+} else {
+  delete root.dataset.place
+  if (window.location.pathname.startsWith('/places/')) history.replaceState(null, '', '/')
+  update()
+}
 
 // The time in the footer, in case someone reads it far from NYC.
 const nycTime = new Intl.DateTimeFormat('en-US', {
@@ -177,7 +296,6 @@ setInterval(updateNycTime, 30000)
 
 // Theme. The inline script in index.html sets the starting theme before first paint.
 const THEME_KEY = 'theme'
-const root = document.documentElement
 const toggles = [...document.querySelectorAll('.theme-toggle')]
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 

@@ -817,6 +817,7 @@ h3 {
   display: block;
   width: var(--stack-width);
   height: calc(351.922 * var(--polaroid-unit));
+  text-decoration: none;
 }
 
 /* A polaroid is 240 x 320 in Figma. Its resting and fanned positions come from PolaroidStack. */
@@ -880,109 +881,104 @@ h3 {
   white-space: nowrap;
 }
 
-.polaroid-stack:focus-visible .polaroid-back-left {
+a.polaroid-stack:focus-visible .polaroid-back-left {
   --x: -31.85;
   --r: -9deg;
 }
 
-.polaroid-stack:focus-visible .polaroid-back-right {
+a.polaroid-stack:focus-visible .polaroid-back-right {
   --x: 37.14;
   --r: 15deg;
 }
 
-.polaroid-stack:focus-visible .polaroid-front {
+a.polaroid-stack:focus-visible .polaroid-front {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
   transform: translateY(-8px) scale(1.03);
 }
 
 @media (hover: hover) {
-  .polaroid-stack:hover .polaroid-back-left {
+  a.polaroid-stack:hover .polaroid-back-left {
     --x: -31.85;
     --r: -9deg;
   }
 
-  .polaroid-stack:hover .polaroid-back-right {
+  a.polaroid-stack:hover .polaroid-back-right {
     --x: 37.14;
     --r: 15deg;
   }
 
-  .polaroid-stack:hover .polaroid-front {
+  a.polaroid-stack:hover .polaroid-front {
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
     transform: translateY(-8px) scale(1.03);
   }
 }
 
-/* ---------- place modal ---------- */
+/* ---------- place page ---------- */
 
-/* The padding fills the space the scrollbar leaves, so the page doesn't shift sideways. */
-html:has(.place-modal[open]) {
-  overflow: hidden;
-  padding-right: var(--page-scrollbar, 0);
+/* main.js sets data-place while a place is open. The list stays in the page, just hidden. */
+html[data-place] #app,
+html[data-place] .skip-link {
+  display: none;
 }
 
-.place-modal {
-  width: min(720px, 100vw - 2 * var(--space-2));
-  max-width: none;
-  max-height: calc(100svh - var(--edge) - var(--edge-bottom));
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  border-radius: var(--space-3);
-  background: var(--surface-modal);
-  color: var(--text-primary);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+.place-view {
+  width: min(var(--place-view-width), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  padding-block: var(--space-6);
 }
 
-.place-modal[open] {
+.place-view-header {
   display: flex;
-  flex-direction: column;
-  animation: place-modal-in 250ms ease-out;
-}
-
-.place-modal::backdrop {
-  background: rgba(0, 0, 0, 0.25);
-  animation: place-modal-in 250ms ease-out;
-}
-
-@keyframes place-modal-in {
-  from {
-    opacity: 0;
-  }
-}
-
-.place-modal-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-height: 0;
-  padding: var(--space-4) var(--space-5) var(--space-5);
-}
-
-.place-modal-header {
-  display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--place-header-gap);
 }
 
-.place-modal-title {
+.place-view-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--place-header-gap);
+  min-width: 0;
+}
+
+/* The list's stack at header size. Everything inside it scales with the unit. */
+.place-view-stack {
+  --polaroid-unit: var(--place-thumb-unit);
+  --stack-width: calc(268.467 * var(--polaroid-unit));
+  flex: none;
+}
+
+.place-view-stack .polaroid {
+  border-width: calc(0.37 * var(--polaroid-unit));
+  box-shadow:
+    calc(4.729 * var(--polaroid-unit)) calc(4.729 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04),
+    calc(0.473 * var(--polaroid-unit)) calc(0.473 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) calc(1.892 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04);
+}
+
+.place-view-stack .polaroid-caption {
+  font-size: calc(14 * var(--polaroid-unit));
+}
+
+.place-view-title {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
-.place-modal-title h3 {
-  font: var(--type-modal-title);
+.place-view-title h1 {
+  font: var(--type-place-title);
   letter-spacing: var(--tracking-body-large);
+  outline: none; /* focused from main.js for screen readers, not something to tab to */
 }
 
-.place-modal-title p {
-  font: var(--type-modal-description);
+.place-view-title p {
+  font: var(--type-place-description);
   letter-spacing: var(--tracking-body-small);
   color: var(--text-secondary);
 }
 
-.place-modal-close {
+.place-view-close {
   position: relative;
   flex-shrink: 0;
   display: flex;
@@ -994,50 +990,23 @@ html:has(.place-modal[open]) {
   color: var(--text-secondary);
 }
 
-.place-modal-close:hover {
+.place-view-close:hover {
   color: var(--text-primary);
 }
 
 /* Larger tap area without changing the spacing from Figma. */
-.place-modal-close::after {
+.place-view-close::after {
   content: '';
   position: absolute;
   inset: -12px;
-}
-
-.place-modal-body {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.place-modal-scroll {
-  min-height: 0;
-  overflow-y: auto;
-  border-radius: 12px;
-}
-
-.place-modal-body::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 72px;
-  background: linear-gradient(to bottom, transparent, var(--surface-modal));
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 150ms ease-out;
-}
-
-/* Set from main.js while there's more to scroll to. */
-.place-modal-body.has-more::after {
-  opacity: 1;
 }
 
 .place-photos {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-2);
+  margin-top: var(--place-photos-gap);
+  padding: var(--place-photos-padding);
 }
 
 .place-photo {
@@ -1053,20 +1022,72 @@ html:has(.place-modal[open]) {
   object-fit: cover;
 }
 
-/* The thin scrollbar from Figma. Reserving its 4px outside the column keeps the photos at full width. */
-@media (hover: hover) {
-  .place-modal-scroll {
-    margin-right: calc(-1 * var(--space-half));
-    scrollbar-gutter: stable;
-  }
+/* ---------- place transition ---------- */
 
-  .place-modal-scroll::-webkit-scrollbar {
-    width: var(--space-half);
-  }
+/*
+ * Opening, about 700ms: the page fades, the stack glides into the header, the text
+ * fades in, then the photos cascade. Closing runs the same steps the other way.
+ * The classes are set in main.js, only when the stack is moving.
+ */
+::view-transition {
+  background: var(--surface-page);
+}
 
-  .place-modal-scroll::-webkit-scrollbar-thumb {
-    border-radius: 2px;
-    background: var(--scrollbar-thumb);
+.place-opening::view-transition-old(root),
+.place-closing::view-transition-old(root) {
+  z-index: 1;
+  mix-blend-mode: normal;
+  animation: place-fade-out var(--place-fade) ease-out both;
+}
+
+.place-opening::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: none;
+}
+
+.place-closing::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: place-fade-in 200ms ease-out calc(var(--place-fade) + var(--place-glide) - 100ms) both;
+}
+
+::view-transition-group(place-stack),
+::view-transition-old(place-stack),
+::view-transition-new(place-stack) {
+  animation-duration: var(--place-glide);
+  animation-delay: var(--place-fade);
+  animation-timing-function: var(--place-glide-ease);
+}
+
+::view-transition-group(place-stack) {
+  z-index: 2;
+}
+
+.place-view.is-cascading .place-view-title,
+.place-view.is-cascading .place-view-close {
+  animation: place-fade-in 200ms ease-out 350ms both;
+}
+
+.place-view.is-cascading .place-photo {
+  animation: place-fade-up 200ms ease-out both;
+  animation-delay: calc(380ms + var(--i) * var(--place-photo-step));
+}
+
+@keyframes place-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes place-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes place-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
   }
 }
 
@@ -1205,17 +1226,9 @@ html:has(.place-modal[open]) {
     padding-block: var(--space-6);
   }
 
-  /* A sheet attached to the bottom of the screen, with one column of photos. */
-  .place-modal {
-    width: 100%;
-    max-width: var(--column);
-    max-height: calc(100svh - var(--topbar-height));
-    margin: auto auto 0;
-    border-radius: var(--space-3) var(--space-3) 0 0;
-  }
-
-  .place-modal-panel {
-    padding: var(--space-3) var(--gutter);
+  /* On a phone the title can wrap, so close stays in the top corner. */
+  .place-view-header {
+    align-items: flex-start;
   }
 
   .place-photos {
@@ -1275,10 +1288,5 @@ html:has(.place-modal[open]) {
 
   .hero-polaroid[aria-pressed='true'] .hero-polaroid-front {
     opacity: 0;
-  }
-
-  .place-modal[open],
-  .place-modal::backdrop {
-    animation: none;
   }
 }
