@@ -103,6 +103,8 @@ button:focus-visible {
   display: grid;
   grid-template-columns: 1fr minmax(0, var(--column)) 1fr;
   min-height: 100svh;
+  isolation: isolate; /* keeps the hero background above the page color */
+  overflow-x: clip;   /* unlike hidden, this doesn't break the sticky rails */
 }
 
 .site-nav,
@@ -112,22 +114,13 @@ button:focus-visible {
   z-index: 10;
   top: var(--edge);
   align-self: start;
-  height: calc(100svh - 2 * var(--edge));
+  height: calc(100svh - var(--edge) - var(--edge-bottom));
 }
 
 main {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-}
-
-/* ---------- avatar (shared) ---------- */
-
-.avatar {
-  width: var(--avatar-hero);
-  height: var(--avatar-hero);
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 /* ---------- side nav ---------- */
@@ -140,28 +133,6 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-.nav-avatar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  border-radius: 50%;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity var(--avatar-fade) ease,
-    visibility 0s linear var(--avatar-fade);
-}
-
-.nav-avatar .avatar {
-  width: var(--avatar-nav);
-  height: var(--avatar-nav);
-}
-
-.nav-avatar:focus-visible {
-  border-radius: 50%;
 }
 
 .nav-list {
@@ -318,27 +289,175 @@ h3 {
 
 .hero {
   position: relative;
-  min-height: calc(100svh - var(--hero-peek));
-  padding-block: var(--hero-cue-space);
+  min-height: max(calc(100svh - var(--hero-peek)), var(--hero-min-height));
+  padding-block: var(--hero-padding-top) var(--hero-padding-bottom);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.hero-header {
+/*
+ * HeroBgImage's three fills, bottom to top: base color, photo, fade into the page.
+ * It runs the full width of the screen, behind the side rails, and past the bottom
+ * of the hero to the end of the first screen.
+ */
+.hero-bg {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: calc(-1 * var(--hero-peek));
+  left: calc(50% - 50vw);
+  width: 100vw;
+  background: var(--surface-hero-base);
+}
+
+.hero-bg::before,
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.hero-bg::before {
+  background: var(--surface-hero-photo) no-repeat var(--hero-photo-x) 0 / max(var(--hero-photo-zoom), var(--hero-photo-min-width)) auto;
+  opacity: var(--hero-photo-opacity);
+}
+
+.hero-bg::after {
+  background: var(--surface-hero-fade);
+}
+
+.hero-identity {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
   padding-block: var(--space-1);
 }
 
-h1 {
-  font: var(--type-display-medium);
-  letter-spacing: var(--tracking-display);
+/* Same footprint as PolaroidStack, so the card sits where Figma puts it. */
+.hero-polaroid {
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(268.467 * var(--polaroid-unit));
+  height: calc(351.922 * var(--polaroid-unit));
+}
+
+.hero-polaroid:focus-visible {
+  outline: none;
+}
+
+.hero-polaroid:focus-visible .hero-polaroid-tilt {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+}
+
+.hero-polaroid-tilt {
+  position: absolute;
+  top: calc(23.96 * var(--polaroid-unit));
+  left: calc(10.84 * var(--polaroid-unit));
+  width: calc(240 * var(--polaroid-unit));
+  height: calc(320 * var(--polaroid-unit));
+  perspective: 1200px;
+  transition: transform 250ms ease-out;
+}
+
+.hero-polaroid-card {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) ease-out;
+}
+
+.hero-polaroid[aria-pressed='true'] .hero-polaroid-card {
+  transform: rotateY(180deg);
+}
+
+.hero-polaroid-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  border: 0.37px solid var(--surface-hero-polaroid-border);
+  background: var(--surface-hero-polaroid);
+  box-shadow:
+    4.729px 4.729px 9.459px rgba(0, 0, 0, 0.04),
+    0.473px 0.473px 9.459px 1.892px rgba(0, 0, 0, 0.04);
+  color: var(--text-hero-polaroid);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* The photo's crop in Figma: 71.9% of its width, starting 5.3% in and 19.4% down. */
+.hero-polaroid-photo {
+  position: absolute;
+  top: calc(19.62 * var(--polaroid-unit));
+  left: calc(9.63 * var(--polaroid-unit));
+  width: calc(220 * var(--polaroid-unit));
+  height: calc(220 * var(--polaroid-unit));
+  overflow: hidden;
+}
+
+.hero-polaroid-photo img {
+  position: absolute;
+  top: -35.98%;
+  left: -7.39%;
+  width: 139.04%;
+  max-width: none;
+  height: auto;
+}
+
+.hero-polaroid-caption {
+  position: absolute;
+  top: calc(239.65 * var(--polaroid-unit));
+  left: 0;
+  width: 100%;
+  height: calc(80 * var(--polaroid-unit));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: var(--type-accent);
+  letter-spacing: var(--tracking-accent);
+  white-space: nowrap;
+}
+
+.hero-polaroid-back {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3);
+  font: var(--type-accent);
+  line-height: 2;
+  letter-spacing: var(--tracking-accent);
+  text-align: left;
+  transform: rotateY(180deg);
+}
+
+/* Sits in the space above the intro, so it doesn't move anything from Figma's layout. */
+.hero-flip-hint {
+  position: absolute;
+  top: calc(343.96 * var(--polaroid-unit) + var(--gap-side-links));
+  left: calc(10.84 * var(--polaroid-unit));
+  width: calc(240 * var(--polaroid-unit));
+  font: var(--type-label);
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .hero-polaroid:hover .hero-polaroid-tilt {
+    transform: rotate(var(--hero-tilt));
+  }
+
+  .hero-polaroid:hover .hero-flip-hint {
+    color: var(--text-primary);
+  }
 }
 
 .hero .lede {
   padding-top: var(--space-3);
+  text-align: center;
 }
 
 .hero-cue {
@@ -354,6 +473,7 @@ h1 {
   letter-spacing: var(--tracking-label);
   color: var(--text-secondary);
   text-decoration: none;
+  line-height: 14px;
   white-space: nowrap;
   transition: color 0.3s ease;
 }
@@ -362,9 +482,9 @@ h1 {
   color: var(--text-primary);
 }
 
-/* The arrow points right in Figma and is rotated into place, so it needs a 15px tall slot. */
+/* The arrow points right in Figma and is rotated into place, so it needs a 10px tall slot. */
 .hero-cue img {
-  margin-block: 3.82px;
+  margin-block: 1.32px;
   transform: rotate(90deg);
 }
 
@@ -816,7 +936,7 @@ html:has(.place-modal[open]) {
 .place-modal {
   width: min(720px, 100vw - 2 * var(--space-2));
   max-width: none;
-  max-height: calc(100svh - 2 * var(--edge));
+  max-height: calc(100svh - var(--edge) - var(--edge-bottom));
   padding: 0;
   overflow: hidden;
   border: 0;
@@ -977,32 +1097,6 @@ html:has(.place-modal[open]) {
   justify-content: center;
 }
 
-/* ---------- desktop only: one avatar at a time, as SideNav's Hero variant shows ---------- */
-
-@media (min-width: 960px) {
-  /*
-   * The outgoing avatar fades out first and the incoming one fades in after it
-   * (transition-delay), so they never overlap. The hero avatar keeps its space
-   * when hidden, so the layout never shifts.
-   */
-  .hero-avatar {
-    transition: opacity var(--avatar-fade) ease var(--avatar-fade);
-  }
-
-  .is-scrolled .hero-avatar {
-    opacity: 0;
-    transition-delay: 0s;
-  }
-
-  .is-scrolled .nav-avatar {
-    opacity: 1;
-    visibility: visible;
-    transition:
-      opacity var(--avatar-fade) ease var(--avatar-fade),
-      visibility 0s linear var(--avatar-fade);
-  }
-}
-
 /* ---------- mobile: nav becomes a top bar, toggle and links move to the footer ---------- */
 
 @media (max-width: 959px) {
@@ -1024,7 +1118,6 @@ html:has(.place-modal[open]) {
     pointer-events: none; /* the fade shouldn't block taps on the content under it */
   }
 
-  .nav-avatar,
   .site-nav .theme-toggle,
   .side-right {
     display: none;
@@ -1075,7 +1168,12 @@ html:has(.place-modal[open]) {
   .hero {
     min-height: 0;
     padding-block: var(--space-6);
-    gap: var(--space-2);
+  }
+
+  /* Starts under the top bar, which takes up its own space above the hero here. */
+  .hero-bg {
+    top: calc(-1 * var(--topbar-height));
+    bottom: 0;
   }
 
   .hero-cue {
@@ -1114,17 +1212,6 @@ html:has(.place-modal[open]) {
     gap: var(--gap-side-links);
   }
 
-  .hero-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
-    padding-block: 0;
-  }
-
-  .hero .lede {
-    padding-top: 0;
-  }
-
   .placeholder-section {
     padding-block: var(--space-6);
     min-height: calc(100svh - var(--topbar-height));
@@ -1138,6 +1225,32 @@ html:has(.place-modal[open]) {
 
   .polaroid {
     transition: none;
+  }
+
+  /* A crossfade replaces the flip, and the card stays still on hover. */
+  .hero-polaroid-tilt,
+  .hero-polaroid:hover .hero-polaroid-tilt,
+  .hero-polaroid-card,
+  .hero-polaroid[aria-pressed='true'] .hero-polaroid-card {
+    transform: none;
+    transition: none;
+  }
+
+  .hero-polaroid-face {
+    transition: opacity var(--crossfade-duration) ease-out;
+  }
+
+  .hero-polaroid-back {
+    opacity: 0;
+    transform: none;
+  }
+
+  .hero-polaroid[aria-pressed='true'] .hero-polaroid-back {
+    opacity: 1;
+  }
+
+  .hero-polaroid[aria-pressed='true'] .hero-polaroid-front {
+    opacity: 0;
   }
 
   .place-modal[open],

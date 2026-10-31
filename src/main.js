@@ -1,9 +1,7 @@
-// Scroll-driven behavior (active nav state, avatar placement, work side panel),
+// Scroll-driven behavior (active nav state, work side panel), the hero polaroid flip,
 // the work card reveal, the place modals, and the theme toggle.
 // (Still to come later: weather widget.)
 
-const app = document.getElementById('app')
-const heroAvatar = document.querySelector('.hero-avatar')
 const sections = [...document.querySelectorAll('main > section[id]')]
 const navLinks = new Map(
   [...document.querySelectorAll('[data-nav]')].map((link) => [link.dataset.nav, link]),
@@ -45,11 +43,6 @@ function updateSections() {
   setActiveSection(current.id)
 }
 
-function updateAvatar() {
-  const heroAvatarGone = heroAvatar.getBoundingClientRect().bottom <= 0
-  app.classList.toggle('is-scrolled', activeId !== 'about' || heroAvatarGone)
-}
-
 function updatePanel() {
   if (!panelLayout.matches) return
   const viewportCenter = window.innerHeight / 2
@@ -66,7 +59,6 @@ let ticking = false
 function update() {
   ticking = false
   updateSections()
-  updateAvatar()
   updatePanel()
 }
 
@@ -80,6 +72,17 @@ window.addEventListener('scroll', requestUpdate, { passive: true })
 window.addEventListener('resize', requestUpdate)
 desktop.addEventListener('change', requestUpdate)
 update()
+
+// Hero polaroid flip. A screen reader hears the handwritten note through the status line.
+const heroPolaroid = document.querySelector('.hero-polaroid')
+const heroFlipStatus = document.getElementById('hero-flip-status')
+const heroNote = heroPolaroid.querySelector('.hero-polaroid-back').textContent
+
+heroPolaroid.addEventListener('click', () => {
+  const flipped = heroPolaroid.getAttribute('aria-pressed') !== 'true'
+  heroPolaroid.setAttribute('aria-pressed', String(flipped))
+  heroFlipStatus.textContent = flipped ? heroNote : ''
+})
 
 // Work card reveal, for screens without the side panel. Only one is open at a time.
 function setRevealed(project, revealed) {

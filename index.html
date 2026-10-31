@@ -28,9 +28,6 @@
   <div id="app">
     <!-- SideNav on desktop, top bar on mobile -->
     <nav class="site-nav" aria-label="Sections">
-      <a class="nav-avatar" href="#top" aria-label="Back to top">
-        <img src="/src/assets/avatar.png" class="avatar" width="48" height="48" alt="">
-      </a>
       <ul class="nav-list">
         <li><a href="#about" data-nav="about" aria-current="true">about</a></li>
         <li><a href="#work" data-nav="work">work</a></li>
@@ -48,9 +45,8 @@
       <div class="weather">
         <p class="weather-temp">
           <span class="weather-icon" aria-hidden="true"></span>
-          <span>71°f in NYC</span>
+          <span>71°F in NYC</span>
         </p>
-        <p>feels {something}</p>
       </div>
       <ul class="side-links">
         <!-- TODO: resume + linkedin URLs not provided yet -->
@@ -62,13 +58,26 @@
 
     <main id="main">
       <section id="about" class="section hero" aria-label="About">
-        <header class="hero-header">
-          <img src="/src/assets/avatar.png" class="avatar hero-avatar" width="72" height="72" alt="">
-          <h1>melanie joy tabroff</h1>
-        </header>
-        <p class="lede">i’m a product designer based in NYC. 7+ years building for high-stakes, human moments at fast-moving startups, most recently in teen mental health at <span class="underline">Somethings</span>, before that in personal finance at <span class="underline">Titan</span>. currently exploring my next role with intention.</p>
+        <div class="hero-bg" aria-hidden="true"></div>
+        <h1 class="visually-hidden">melanie joy tabroff</h1>
+        <div class="hero-identity">
+          <button class="hero-polaroid" type="button" aria-pressed="false" aria-label="hi, i’m melanie joy. flip the polaroid">
+            <span class="hero-polaroid-tilt">
+              <span class="hero-polaroid-card">
+                <span class="hero-polaroid-face hero-polaroid-front">
+                  <span class="hero-polaroid-photo"><img src="/src/assets/melanie.jpg" width="1599" height="2133" alt=""></span>
+                  <span class="hero-polaroid-caption">hi, i’m melanie joy</span>
+                </span>
+                <span class="hero-polaroid-face hero-polaroid-back">back from a year of travel, teaching yoga, and finding my joy again. now looking for my next design role.</span>
+              </span>
+            </span>
+            <span class="hero-flip-hint"><span aria-hidden="true">↻</span> flip</span>
+          </button>
+        </div>
+        <p class="visually-hidden" id="hero-flip-status" role="status"></p>
+        <p class="lede">a NYC-based product designer. 7+ years designing for high-stakes, human moments. most recently in teen mental health at <a href="https://www.somethings.com" target="_blank" rel="noopener">Somethings</a>, before that in personal finance at <a href="https://www.titan.com" target="_blank" rel="noopener">Titan</a>.</p>
         <a class="hero-cue" href="#work">
-          <img src="/src/assets/icons/arrow.svg" width="15.5" height="7.36396" alt="">
+          <img src="/src/assets/icons/arrow.svg" width="10.5" height="7.36396" alt="">
           <span>selected work</span>
         </a>
       </section>

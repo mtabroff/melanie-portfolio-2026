@@ -28,6 +28,10 @@
   --surface-polaroid-border-fill: #dbdbdb;
   --surface-polaroid-photo-fill: #ebebeb;
   --text-polaroid: #9f9f9f;
+  --surface-hero-base-fill: #fffef8;
+  --surface-hero-polaroid-fill: #ffffff;
+  --surface-hero-polaroid-border-fill: #dbdbdb;
+  --text-hero-polaroid: #101010; /* stays dark on the paper in both themes */
   --scrollbar-thumb: rgba(0, 0, 0, 0.2);
 
   color-scheme: light;
@@ -44,6 +48,15 @@
   --surface-polaroid: var(--surface-polaroid-fill);
   --surface-polaroid-border: var(--surface-polaroid-border-fill);
   --surface-polaroid-photo: var(--surface-polaroid-photo-fill);
+  --surface-hero-base: var(--surface-hero-base-fill);
+  --surface-hero-photo: url('./assets/melanie.jpg');
+  --surface-hero-fade: linear-gradient(
+    to bottom,
+    transparent var(--hero-fade-start),
+    var(--surface-z0) var(--hero-fade-end)
+  );
+  --surface-hero-polaroid: var(--surface-hero-polaroid-fill);
+  --surface-hero-polaroid-border: var(--surface-hero-polaroid-border-fill);
   --surface-topbar-fade: linear-gradient(
     to bottom,
     var(--surface-z0) 0%,
@@ -89,16 +102,24 @@
 
   /* ---------- layout ---------- */
   --edge: var(--space-6);  /* distance of the side rails from the viewport edge */
+  --edge-bottom: 34px;     /* the rails stop closer to the bottom of the frame in Figma */
   --column: 600px;         /* centered content column, including its gutter */
   --gutter: var(--space-3);
   --topbar-height: var(--space-6);
-  --avatar-hero: 72px;
-  --avatar-nav: 48px;
   --radius-card: 32px;
   --height-card: 552px;
-  --hero-peek: 27px;       /* how much of the first card shows on the first screen */
-  --hero-cue-bottom: 37px;
-  --hero-cue-space: 98px;  /* keeps the intro clear of the cue */
+  --hero-peek: 17px;       /* how much of the first card shows on the first screen */
+  --hero-cue-bottom: 26px;
+  --hero-padding-top: var(--space-6);
+  --hero-padding-bottom: 46px;
+  --hero-min-height: 606px; /* keeps the intro clear of the cue on short screens */
+  --hero-photo-opacity: 0.16;
+  --hero-photo-zoom: 250.78%; /* HeroBgImage's crop, as a share of the frame width */
+  --hero-photo-min-width: 3210px; /* holds that zoom on narrow screens, so no faces show */
+  --hero-photo-x: 26.89%;
+  --hero-fade-start: 60.76%;
+  --hero-fade-end: 87.53%;
+  --hero-tilt: -2deg;
   --panel-width: 173px;
   --panel-gap: var(--space-5);
   --polaroid-unit: 1px;    /* the stack is drawn in Figma's desktop pixels and scaled by this */
@@ -108,7 +129,8 @@
   --places-list-padding: var(--space-5);
 
   /* ---------- motion ---------- */
-  --avatar-fade: 0.2s;
+  --flip-duration: 600ms;
+  --crossfade-duration: 300ms;
   --reveal-fade: 0.25s; /* ease-out, from the WorkCardReveal prototype */
 }
 
@@ -123,7 +145,6 @@
     --type-modal-description: 400 14px/1.2 var(--font-sans);
 
     --gutter: 20px;
-    --avatar-hero: var(--space-8);
     --radius-card: var(--space-3);
     --polaroid-unit: 0.85px;
     --place-row-odd: var(--space-3);
@@ -156,6 +177,9 @@
     --surface-polaroid-border-fill: #b5b2ac;
     --surface-polaroid-photo-fill: #b5b2ac;
     --text-polaroid: #5f5d59;
+    --surface-hero-base-fill: #101010;
+    --surface-hero-polaroid-fill: #dcd8d0;
+    --surface-hero-polaroid-border-fill: #c7c3bb;
     --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 
     color-scheme: dark;
@@ -179,6 +203,9 @@
   --surface-polaroid-border-fill: #b5b2ac;
   --surface-polaroid-photo-fill: #b5b2ac;
   --text-polaroid: #5f5d59;
+  --surface-hero-base-fill: #101010;
+  --surface-hero-polaroid-fill: #dcd8d0;
+  --surface-hero-polaroid-border-fill: #c7c3bb;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
 
   color-scheme: dark;
