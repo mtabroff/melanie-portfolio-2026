@@ -976,6 +976,10 @@ html[data-place] .skip-link {
   font: var(--type-place-description);
   letter-spacing: var(--tracking-body-small);
   color: var(--text-secondary);
+  /* Hidden for now. The one-line slot stays so the header won't shift when these come back. */
+  height: 1lh;
+  overflow: hidden;
+  visibility: hidden;
 }
 
 .place-view-close {
