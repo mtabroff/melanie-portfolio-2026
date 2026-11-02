@@ -1,8 +1,8 @@
 // Scroll-driven behavior (active nav state, work side panel), the hero polaroid flip,
-// the work card reveal, the place pages, and the theme toggle.
+// the work card reveal, and the theme toggle. The places deck is in places-deck.js.
 // (Still to come later: weather widget.)
 
-import { createPlacesDeck, isDeckMode } from './places-deck.js'
+import { initPlacesDeck } from './places-deck.js'
 
 const root = document.documentElement
 const sections = [...document.querySelectorAll('#main > section[id]')]
@@ -64,7 +64,6 @@ let ticking = false
 
 function update() {
   ticking = false
-  if (root.dataset.place) return // the list is hidden, so there's nothing to measure
   updateSections()
   updatePanel()
 }
@@ -125,168 +124,7 @@ panelLayout.addEventListener('change', () => {
   requestUpdate()
 })
 
-// Place pages. Each place has its own URL, and the list stays in the page behind it,
-// so closing can bring back the exact spot it was opened from.
-const placeLinks = new Map(
-  [...document.querySelectorAll('a.polaroid-stack')].map((link) => [link.dataset.place, link]),
-)
-const placeViews = new Map(
-  [...document.querySelectorAll('.place-view')].map((view) => [view.dataset.place, view]),
-)
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-const siteTitle = document.title
-const STACK_NAME = 'place-stack'
-
-// Temporary: ?places=deck opens stacks as a card deck instead, to compare the two.
-const placesDeck = isDeckMode() ? createPlacesDeck() : null
-
-let currentPlace = null
-let listScrollY = null
-let transitionId = 0
-
-for (const [slug, view] of placeViews) {
-  view.querySelector('.place-view-stack').innerHTML = placeLinks.get(slug).innerHTML
-  view.querySelectorAll('.place-photo').forEach((photo, i) => photo.style.setProperty('--i', i))
-  view.querySelector('.place-view-close').addEventListener('click', closePlace)
-}
-
-function placeFromUrl() {
-  const match = window.location.pathname.match(/^\/places\/([^/]+)\/?$/)
-  return match && placeViews.has(match[1]) ? match[1] : null
-}
-
-function showPlace(slug) {
-  const previous = currentPlace
-  currentPlace = slug
-
-  for (const [key, view] of placeViews) view.hidden = key !== slug
-
-  if (slug) {
-    root.dataset.place = slug
-    document.title = `${placeViews.get(slug).querySelector('h1').textContent} · melanie joy tabroff`
-    window.scrollTo({ top: 0, behavior: 'instant' })
-    placeViews.get(slug).querySelector('h1').focus({ preventScroll: true })
-    return
-  }
-
-  delete root.dataset.place
-  document.title = siteTitle
-  const link = placeLinks.get(previous)
-  if (listScrollY === null) link.scrollIntoView({ block: 'center', behavior: 'instant' })
-  else window.scrollTo({ top: listScrollY, behavior: 'instant' })
-  link.focus({ preventScroll: true })
-  history.scrollRestoration = 'auto'
-  update()
-}
-
-// A lazy image that hasn't loaded yet would fly across the screen as a blank polaroid.
-function stackImagesReady(stack) {
-  const images = [...stack.querySelectorAll('img')]
-  for (const image of images) image.loading = 'eager'
-  const decoded = images.map((image) => image.decode().catch(() => {}))
-  return Promise.race([Promise.all(decoded), new Promise((done) => setTimeout(done, 300))])
-}
-
-function clearStackMotion() {
-  root.classList.remove('place-opening', 'place-closing')
-  for (const stack of document.querySelectorAll('.polaroid-stack')) {
-    stack.style.viewTransitionName = ''
-  }
-}
-
-function goToPlace(slug, { animate = true } = {}) {
-  if (slug === currentPlace) return
-
-  const previous = currentPlace
-  if (slug && !previous) listScrollY = window.scrollY
-
-  clearStackMotion()
-  for (const view of placeViews.values()) view.classList.remove('is-cascading')
-
-  if (!animate) {
-    showPlace(slug)
-    return
-  }
-
-  // No View Transitions support: a plain fade on whatever is coming in.
-  if (!document.startViewTransition) {
-    showPlace(slug)
-    const incoming = slug ? placeViews.get(slug) : document.getElementById('app')
-    incoming.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
-    return
-  }
-
-  // Reduced motion, or one place straight to another: the default crossfade, nothing moves.
-  if (reducedMotion.matches || (slug && previous)) {
-    document.startViewTransition(() => showPlace(slug))
-    return
-  }
-
-  const opening = Boolean(slug)
-  const link = placeLinks.get(slug ?? previous)
-  const thumb = placeViews.get(slug ?? previous).querySelector('.place-view-stack')
-  const from = opening ? link : thumb
-  const to = opening ? thumb : link
-
-  root.classList.add(opening ? 'place-opening' : 'place-closing')
-  from.style.viewTransitionName = STACK_NAME
-  if (opening) placeViews.get(slug).classList.add('is-cascading')
-
-  const id = ++transitionId
-  const transition = document.startViewTransition(async () => {
-    from.style.viewTransitionName = ''
-    to.style.viewTransitionName = STACK_NAME
-    showPlace(slug)
-    await stackImagesReady(to)
-  })
-  transition.finished.finally(() => {
-    if (id === transitionId) clearStackMotion()
-  })
-}
-
-function closePlace() {
-  // Opened from the list: step back, so the list isn't in the history twice.
-  if (history.state?.fromList) {
-    history.back()
-    return
-  }
-  history.pushState(null, '', '/')
-  goToPlace(null)
-}
-
-for (const [slug, link] of placeLinks) {
-  link.addEventListener('click', (event) => {
-    // Let a new-tab click or similar do what it normally does.
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-    event.preventDefault()
-    if (placesDeck) {
-      placesDeck.open(link, placeViews.get(slug))
-      return
-    }
-    history.scrollRestoration = 'manual'
-    history.pushState({ fromList: true }, '', link.pathname)
-    goToPlace(slug)
-  })
-}
-
-window.addEventListener('popstate', (event) => {
-  // Safari's swipe back has already animated by now, so don't animate on top of it.
-  goToPlace(placeFromUrl(), { animate: !event.hasUAVisualTransition })
-})
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && currentPlace) closePlace()
-})
-
-const initialPlace = placeFromUrl()
-if (initialPlace) {
-  history.scrollRestoration = 'manual'
-  showPlace(initialPlace)
-} else {
-  delete root.dataset.place
-  if (window.location.pathname.startsWith('/places/')) history.replaceState(null, '', '/')
-  update()
-}
+initPlacesDeck()
 
 // The time in the footer, in case someone reads it far from NYC.
 const nycTime = new Intl.DateTimeFormat('en-US', {

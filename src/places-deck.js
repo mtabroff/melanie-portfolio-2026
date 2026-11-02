@@ -1,26 +1,27 @@
-// Temporary: an alternate places interaction, shown with ?places=deck so it can be
-// compared with the place pages. Everything for it lives in this file and places-deck.css.
-import './places-deck.css'
+// The places deck. Clicking a stack grows it into a deck of that place's photos, and each
+// place has its own URL, so back works and a /places/japan link can be shared.
+// The list stays behind the dialog, so closing returns to the exact spot it was opened from.
 
 const OPEN_MS = 420
 const CLOSE_MS = 340
+const ZOOM_MS = 360
+const FADE_MS = 200
 const FLIGHT_MS = 560
 const FLIGHT_TURN = 0.45 // the share of a flight when the card passes behind or in front of the deck
 const THROW = 0.72 // how far a card travels before it turns, as a share of its width
 const TILT = 7
 const TAP_SLOP = 8 // px of movement before a press counts as a drag
 const SWIPE_SHARE = 0.18 // of the card width, how far a drag has to go to send the card
+const DOUBLE_TAP_MS = 260 // a single tap waits this long, in case it turns out to be a double
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const EASE_IN_OUT = 'cubic-bezier(0.45, 0, 0.2, 1)'
+const HINT_KEY = 'deck-hint-seen'
 
-export function isDeckMode() {
-  return new URLSearchParams(window.location.search).get('places') === 'deck'
-}
-
-// The place page's slots, starting with the stack's front photo so the expand reads as one
+// Each place's slots, starting with the stack's front photo so the opening reads as one
 // object. The next two then match the polaroids behind it.
-function photosFor(link, view) {
-  const photos = [...view.querySelectorAll('.place-photo')].map((slot) => {
+function photosFor(link, slug) {
+  const slots = document.querySelectorAll(`.place-photos[data-place="${slug}"] .place-photo`)
+  const photos = [...slots].map((slot) => {
     const image = slot.querySelector('img')
     return { src: image?.src, alt: image?.alt ?? '' }
   })
@@ -33,17 +34,20 @@ function photosFor(link, view) {
 function makeCard(photo) {
   const card = document.createElement('div')
   card.className = 'deck-card'
+  const face = document.createElement('div')
+  face.className = 'deck-face'
   if (photo.src) {
     const image = document.createElement('img')
     image.src = photo.src
     image.alt = ''
     image.draggable = false
-    card.append(image)
+    face.append(image)
   }
+  card.append(face)
   return card
 }
 
-// A photo that hasn't decoded yet would expand as an empty card.
+// A photo that hasn't decoded yet would grow as an empty card.
 function imagesReady(cards) {
   const decoded = cards.flatMap((card) =>
     [...card.querySelectorAll('img')].map((image) => image.decode().catch(() => {})),
@@ -51,44 +55,50 @@ function imagesReady(cards) {
   return Promise.race([Promise.all(decoded), new Promise((done) => setTimeout(done, 300))])
 }
 
-export function createPlacesDeck() {
+function placeFromUrl(links) {
+  const match = window.location.pathname.match(/^\/places\/([^/]+)\/?$/)
+  return match && links.has(match[1]) ? match[1] : null
+}
+
+export function initPlacesDeck() {
   const root = document.documentElement
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const phone = window.matchMedia('(max-width: 959px)') // matches the shell breakpoint in style.css
+  const mouse = window.matchMedia('(hover: hover)')
+  const siteTitle = document.title
 
-  const dialog = document.createElement('dialog')
-  dialog.className = 'deck'
-  dialog.setAttribute('aria-labelledby', 'deck-title')
-  dialog.innerHTML = `
-    <div class="deck-scrim"></div>
-    <div class="deck-body">
-      <button class="deck-stage" type="button" aria-label="next photo" autofocus></button>
-      <div class="deck-caption">
-        <h2 class="deck-title" id="deck-title"></h2>
-        <span class="deck-count"></span>
-      </div>
-    </div>
-    <p class="visually-hidden" role="status"></p>
-  `
-  const closeButton = document.querySelector('.place-view-close').cloneNode(true)
-  dialog.append(closeButton)
-  document.body.append(dialog)
-
+  const links = new Map(
+    [...document.querySelectorAll('a.polaroid-stack')].map((link) => [link.dataset.place, link]),
+  )
+  const dialog = document.querySelector('.deck')
   const scrim = dialog.querySelector('.deck-scrim')
+  const body = dialog.querySelector('.deck-body')
+  const closeButton = dialog.querySelector('.deck-close')
   const stage = dialog.querySelector('.deck-stage')
   const caption = dialog.querySelector('.deck-caption')
   const title = dialog.querySelector('.deck-title')
   const count = dialog.querySelector('.deck-count')
+  const hint = dialog.querySelector('.deck-hint')
   const status = dialog.querySelector('[role="status"]')
+  const zoom = dialog.querySelector('.deck-zoom')
+  const zoomPhoto = dialog.querySelector('.deck-zoom-photo')
+  const zoomScrim = dialog.querySelector('.deck-zoom-scrim')
+  const zoomCaption = dialog.querySelector('.deck-zoom-caption')
+  const zoomTitle = dialog.querySelector('.deck-zoom-title')
+  const zoomCount = dialog.querySelector('.deck-zoom-count')
+  const zoomClose = dialog.querySelector('.deck-zoom-close')
 
   let link = null
   let photos = []
   let cards = []
   let index = 0
   let closing = false
+  let closeRequested = false
+  let zoomed = false
   let press = null
-
-  // A deck left open by a reload is gone, so its history entry shouldn't count as open.
-  if (history.state?.deck) history.replaceState(null, '')
+  let lastTap = null
+  let tapTimer = null
+  let hintShown = false
 
   function layout() {
     const total = cards.length
@@ -120,51 +130,84 @@ export function createPlacesDeck() {
   }
 
   function fadeChrome(keyframes, options) {
-    return [caption, closeButton].map((element) =>
+    return [caption, closeButton, hint].map((element) =>
       element.animate(keyframes, { easing: 'ease-out', ...options }),
     )
   }
 
-  async function open(nextLink, view) {
+  // Only ever once, the first time someone on a phone opens a place.
+  function showHintOnce() {
+    hint.hidden = true
+    if (!phone.matches || hintShown) return
+    hintShown = true
+    try {
+      if (localStorage.getItem(HINT_KEY)) return
+      localStorage.setItem(HINT_KEY, '1')
+    } catch {
+      // Storage can be blocked. Then it's once per visit.
+    }
+    hint.hidden = false
+  }
+
+  async function open(slug, { animate = true } = {}) {
     if (link) return
-    link = nextLink
+    link = links.get(slug)
     closing = false
-    photos = photosFor(link, view)
+    closeRequested = false
+    photos = photosFor(link, slug)
     cards = photos.map(makeCard)
     index = 0
-    title.textContent = view.querySelector('h1').textContent
+    const name = link.querySelector('.polaroid-front .polaroid-caption').textContent
+    title.textContent = name
+    zoomTitle.textContent = name
     stage.replaceChildren(...cards)
     layout()
+    showHintOnce()
     await imagesReady(cards.slice(0, 3))
 
     dialog.showModal()
     root.classList.add('deck-open')
-    history.pushState({ deck: true }, '', window.location.href)
+    delete root.dataset.place
+    document.title = `${name} · melanie joy tabroff`
+    history.scrollRestoration = 'manual'
     link.style.visibility = 'hidden'
 
+    if (!animate) return
+
     if (reducedMotion.matches) {
-      dialog.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
+      dialog.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' })
       return
     }
 
-    scrim.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
+    scrim.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' })
     visibleCards().forEach((card) => {
-      card.animate([{ transform: stackTransform(Number(card.dataset.depth)) }, {}], {
-        duration: OPEN_MS,
-        easing: EASE_OUT,
-      })
+      const depth = Number(card.dataset.depth)
+      card.animate([{ transform: stackTransform(depth) }, {}], { duration: OPEN_MS, easing: EASE_OUT })
+      // The polaroids behind the front one keep their photos until they've turned to paper.
+      if (depth > 0) {
+        card.firstChild.animate([{ opacity: 1 }, {}], { duration: OPEN_MS, easing: 'ease-in' })
+      }
     })
-    fadeChrome([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: 220, fill: 'backwards' })
+    fadeChrome([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, delay: 220, fill: 'backwards' })
   }
 
   async function close({ animate = true } = {}) {
     if (closing || !dialog.open) return
     closing = true
+    clearTimeout(tapTimer)
+    tapTimer = null
+    leaveZoom()
+
+    // Opened from a shared link, the stack may be nowhere near the screen.
+    const stackRect = link.getBoundingClientRect()
+    if (stackRect.bottom < 0 || stackRect.top > window.innerHeight) {
+      link.scrollIntoView({ block: 'center', behavior: 'instant' })
+    }
     link.style.visibility = ''
 
     if (animate && reducedMotion.matches) {
       await dialog
-        .animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: 'ease-out', fill: 'forwards' })
+        .animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease-out', fill: 'forwards' })
         .finished.catch(() => {})
     } else if (animate) {
       const motion = visibleCards().map((card) => {
@@ -189,38 +232,50 @@ export function createPlacesDeck() {
 
   // Closing goes through history, so the browser's back button does the same thing.
   function requestClose() {
-    if (history.state?.deck) history.back()
-    else close()
+    if (closeRequested) return
+    closeRequested = true
+    if (history.state?.deck) {
+      history.back()
+      return
+    }
+    // Opened from a shared link, so there's no list to step back to.
+    history.pushState(null, '', '/')
+    close()
   }
 
   function send(direction = -1, from) {
-    if (cards.length < 2 || closing) return
+    if (cards.length < 2 || closing || zoomed) return
     const card = cards[index]
     const start = from ?? getComputedStyle(card).transform
     index = (index + 1) % cards.length
     layout()
 
     if (reducedMotion.matches) {
-      cards[index].animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
+      cards[index].firstChild.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' })
       return
     }
 
     const out = `translate(${direction * stage.offsetWidth * THROW}px, -2%) rotate(${direction * TILT}deg)`
-    card.flight?.cancel()
-    card.flight = card.animate(
+    fly(
+      card,
       [
         { transform: start, opacity: 1, zIndex: 50, offset: 0, easing: EASE_OUT },
         { transform: out, opacity: 1, zIndex: 50, offset: FLIGHT_TURN },
         { transform: out, opacity: 1, zIndex: 0, offset: FLIGHT_TURN, easing: EASE_IN_OUT },
         { zIndex: 0, offset: 1 }, // on to wherever the deck has it by then
       ],
-      { duration: FLIGHT_MS },
+      // Still a photo while it's in the air, and paper once it lands at the back.
+      [
+        { opacity: 1, offset: 0 },
+        { opacity: 1, offset: 0.6 },
+        { offset: 1 },
+      ],
     )
   }
 
   // The reverse of send: the back card swings out from behind the deck and lands on top.
   function bringBack() {
-    if (cards.length < 2 || closing) return
+    if (cards.length < 2 || closing || zoomed) return
     const card = cards[(index - 1 + cards.length) % cards.length]
     const style = getComputedStyle(card)
     const start = style.transform
@@ -229,21 +284,101 @@ export function createPlacesDeck() {
     layout()
 
     if (reducedMotion.matches) {
-      card.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })
+      card.firstChild.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' })
       return
     }
 
     const out = `translate(${-stage.offsetWidth * THROW}px, -2%) rotate(${-TILT}deg)`
-    card.flight?.cancel()
-    card.flight = card.animate(
+    fly(
+      card,
       [
         { transform: start, opacity: startOpacity, zIndex: 0, offset: 0, easing: EASE_IN_OUT },
         { transform: out, opacity: 1, zIndex: 0, offset: FLIGHT_TURN },
         { transform: out, opacity: 1, zIndex: 50, offset: FLIGHT_TURN, easing: EASE_OUT },
         { zIndex: 50, offset: 1 },
       ],
-      { duration: FLIGHT_MS },
+      [
+        { opacity: 0, offset: 0 },
+        { opacity: 1, offset: FLIGHT_TURN },
+        { offset: 1 },
+      ],
     )
+  }
+
+  function fly(card, cardFrames, faceFrames) {
+    card.flights?.forEach((flight) => flight.cancel())
+    card.flights = [
+      card.animate(cardFrames, { duration: FLIGHT_MS }),
+      card.firstChild.animate(faceFrames, { duration: FLIGHT_MS }),
+    ]
+  }
+
+  function enterZoom() {
+    if (zoomed || closing) return
+    zoomed = true
+    const { src } = photos[index]
+    zoomPhoto.hidden = !src
+    if (src) zoomPhoto.src = src
+    zoomCount.textContent = `${count.textContent} · ${mouse.matches ? 'double-click' : 'double-tap'} to exit`
+    zoom.hidden = false
+    body.inert = true
+    zoomClose.focus({ preventScroll: true })
+
+    if (reducedMotion.matches) {
+      zoom.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' })
+      return
+    }
+    zoom.animate([{ backgroundColor: 'transparent' }, {}], { duration: ZOOM_MS, easing: 'ease-out' })
+    zoomPhoto.animate([cardBox(), {}], { duration: ZOOM_MS, easing: EASE_OUT })
+    for (const element of [zoomScrim, zoomCaption, zoomClose]) {
+      element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, delay: 160, fill: 'backwards', easing: 'ease-out' })
+    }
+  }
+
+  // The photo's box while it sits on the top card. Its size changes rather than its scale,
+  // so the crop changes smoothly from the card's to the full screen's.
+  function cardBox() {
+    const box = stage.getBoundingClientRect()
+    return { top: `${box.top}px`, left: `${box.left}px`, width: `${box.width}px`, height: `${box.height}px` }
+  }
+
+  async function exitZoom() {
+    if (!zoomed) return
+    zoomed = false
+    body.inert = false
+    stage.focus({ preventScroll: true })
+
+    const motion = reducedMotion.matches
+      ? [zoom.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease-out', fill: 'forwards' })]
+      : [
+          zoom.animate([{}, { backgroundColor: 'transparent' }], { duration: ZOOM_MS, easing: 'ease-out', fill: 'forwards' }),
+          zoomPhoto.animate([{}, cardBox()], { duration: ZOOM_MS, easing: EASE_OUT, fill: 'forwards' }),
+          ...[zoomScrim, zoomCaption, zoomClose].map((element) =>
+            element.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-out', fill: 'forwards' }),
+          ),
+        ]
+    await Promise.all(motion.map((animation) => animation.finished.catch(() => {})))
+    if (!zoomed) leaveZoom()
+  }
+
+  function leaveZoom() {
+    zoomed = false
+    zoom.hidden = true
+    body.inert = false
+    for (const element of [zoom, zoomPhoto, zoomScrim, zoomCaption, zoomClose]) {
+      element.getAnimations().forEach((animation) => animation.cancel())
+    }
+  }
+
+  function isDoubleTap(event) {
+    const previous = lastTap
+    const now = { time: event.timeStamp, x: event.clientX, y: event.clientY }
+    const double =
+      previous &&
+      now.time - previous.time < DOUBLE_TAP_MS &&
+      Math.hypot(now.x - previous.x, now.y - previous.y) < TAP_SLOP * 3
+    lastTap = double ? null : now
+    return double
   }
 
   stage.addEventListener('pointerdown', (event) => {
@@ -261,8 +396,11 @@ export function createPlacesDeck() {
     if (reducedMotion.matches) return
     const card = cards[index]
     card.classList.add('is-dragging')
-    const turn = (dx / stage.offsetWidth) * TILT
-    card.style.transform = `translate(${dx}px, ${dy * 0.2}px) rotate(${turn}deg)`
+    card.style.transform = `translate(${dx}px, ${dy * 0.2}px) rotate(${(dx / stage.offsetWidth) * TILT}deg)`
+    // The next photo comes up on its paper as this one moves off it.
+    const next = cards[(index + 1) % cards.length]
+    const progress = Math.min(Math.abs(dx) / (stage.offsetWidth * SWIPE_SHARE), 1)
+    next.firstChild.style.opacity = progress
   })
 
   function releaseCard() {
@@ -270,6 +408,7 @@ export function createPlacesDeck() {
     const from = getComputedStyle(card).transform
     card.classList.remove('is-dragging')
     card.style.transform = ''
+    cards[(index + 1) % cards.length].firstChild.style.opacity = ''
     return from
   }
 
@@ -278,7 +417,16 @@ export function createPlacesDeck() {
     const { dragging, x } = press
     press = null
     if (!dragging) {
-      send()
+      clearTimeout(tapTimer)
+      tapTimer = null
+      if (isDoubleTap(event)) {
+        enterZoom()
+        return
+      }
+      tapTimer = setTimeout(() => {
+        tapTimer = null
+        send()
+      }, DOUBLE_TAP_MS)
       return
     }
     const dx = event.clientX - x
@@ -297,6 +445,18 @@ export function createPlacesDeck() {
   })
 
   closeButton.addEventListener('click', requestClose)
+  zoomClose.addEventListener('click', exitZoom)
+
+  zoom.addEventListener('pointerup', (event) => {
+    if (event.target.closest('.deck-zoom-close')) return
+    if (isDoubleTap(event)) exitZoom()
+  })
+
+  // Anywhere outside the deck closes it.
+  dialog.addEventListener('click', (event) => {
+    if (event.target.closest('.deck-stage, .deck-close, .deck-zoom')) return
+    requestClose()
+  })
 
   dialog.addEventListener('keydown', (event) => {
     event.stopPropagation() // Esc here shouldn't also close a work card behind the deck
@@ -305,32 +465,60 @@ export function createPlacesDeck() {
     else if (event.key === 'ArrowLeft') bringBack()
     else if (event.key === 'Escape') {
       event.preventDefault()
-      requestClose()
+      if (zoomed) exitZoom()
+      else requestClose()
     }
   })
 
   dialog.addEventListener('cancel', (event) => {
     event.preventDefault()
-    requestClose()
+    if (zoomed) exitZoom()
+    else requestClose()
   })
 
   dialog.addEventListener('close', () => {
-    for (const element of [scrim, caption, closeButton, dialog]) {
+    for (const element of [scrim, caption, closeButton, hint, dialog]) {
       element.getAnimations().forEach((animation) => animation.cancel())
     }
     root.classList.remove('deck-open')
     dialog.classList.remove('is-tabbing')
     stage.replaceChildren()
+    document.title = siteTitle
+    history.scrollRestoration = 'auto'
     link.style.visibility = ''
     link.focus({ preventScroll: true })
     link = null
     press = null
-    if (history.state?.deck) history.back()
+    lastTap = null
+    // Closed by the browser rather than through requestClose, so the URL is still the place's.
+    if (placeFromUrl(links)) {
+      if (history.state?.deck) history.back()
+      else history.pushState(null, '', '/')
+    }
   })
+
+  for (const [slug, stack] of links) {
+    stack.addEventListener('click', (event) => {
+      // Let a new-tab click or similar do what it normally does.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      event.preventDefault()
+      history.pushState({ deck: true }, '', stack.pathname)
+      open(slug)
+    })
+  }
 
   window.addEventListener('popstate', (event) => {
-    if (dialog.open && !event.state?.deck) close({ animate: !event.hasUAVisualTransition })
+    const slug = placeFromUrl(links)
+    const animate = !event.hasUAVisualTransition // Safari's swipe back has already animated
+    if (slug && !link) open(slug, { animate })
+    else if (!slug && dialog.open) close({ animate })
   })
 
-  return { open }
+  const initial = placeFromUrl(links)
+  if (initial) {
+    open(initial, { animate: false })
+  } else {
+    delete root.dataset.place
+    if (window.location.pathname.startsWith('/places/')) history.replaceState(null, '', '/')
+  }
 }

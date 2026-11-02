@@ -15,7 +15,7 @@ function placePages() {
     closeBundle() {
       const page = resolve(outDir, 'index.html')
       const html = readFileSync(page, 'utf8')
-      for (const [, slug] of html.matchAll(/<main[^>]*data-place="([^"]+)"/g)) {
+      for (const [, slug] of html.matchAll(/class="place-photos" data-place="([^"]+)"/g)) {
         const dir = resolve(outDir, 'places', slug)
         mkdirSync(dir, { recursive: true })
         copyFileSync(page, resolve(dir, 'index.html'))

@@ -31,6 +31,9 @@
   --surface-hero-polaroid-fill: #ffffff;
   --surface-hero-polaroid-border-fill: #dbdbdb;
   --text-hero-polaroid: #101010; /* stays dark on the paper in both themes */
+  --text-deck-hint: #999999;   /* hardcoded on the hint in Figma */
+  --surface-deck-card-edge: rgba(0, 0, 0, 0.06);
+  --surface-deck-zoom: #121212; /* stays dark in both themes */
   --scrollbar-thumb: rgba(0, 0, 0, 0.2);
 
   color-scheme: light;
@@ -78,8 +81,6 @@
   --type-label: 400 12px/16px var(--font-sans);
   --type-label-medium: 500 12px/16px var(--font-sans);
   --type-accent: 400 14px/1.2 var(--font-accent);
-  --type-place-title: 400 20px/1.2 var(--font-sans);
-  --type-place-description: 400 16px/1.2 var(--font-sans);
 
   --tracking-display: -0.02em;
   --tracking-body-large: -0.02em;
@@ -124,11 +125,17 @@
   --hero-fade-start: 60.76%;
   --hero-fade-end: 87.53%;
   --hero-tilt: -2deg;
-  --place-view-width: 720px;
-  --place-thumb-unit: 0.4376px; /* header stack: 105 x 140 polaroids in Figma */
-  --place-header-gap: var(--space-4);
-  --place-photos-gap: 46px;
-  --place-photos-padding: var(--space-4) var(--space-5) var(--space-5);
+  /* 420 wide on desktop and 311 on a 375 phone, and always leaves room for the close and caption. */
+  --deck-card-width: min(420px, 100vw - 64px, (100vh - 124px) * 3 / 4);
+  --deck-card-width: min(420px, 100vw - 64px, (100dvh - 124px) * 3 / 4);
+  --deck-unit: calc(var(--deck-card-width) / 420); /* edges and shadows shrink with the card, as in Figma */
+  --deck-tilt-near: 4deg;  /* Figma's rotation runs the opposite way to CSS, so its -4 is 4 here */
+  --deck-tilt-far: -5deg;  /* and its 5 is -5 */
+  --deck-space-top: 56fr;
+  --deck-space-bottom: 124fr;
+  --deck-close-gap: 31px;
+  --deck-zoom-edge: var(--space-6);
+  --deck-zoom-top: var(--space-5);
   --contact-min-height: 665px;
   --contact-photo-width: max(var(--hero-photo-zoom-vw), var(--hero-photo-min-width));
   --contact-photo-height: calc(var(--contact-photo-width) * 1.2523); /* Figma stretches the crop slightly here */
@@ -144,10 +151,8 @@
   /* ---------- motion ---------- */
   --flip-duration: 600ms;
   --crossfade-duration: 300ms;
-  --place-fade: 150ms;      /* the rest of the page */
-  --place-glide: 400ms;     /* the stack, moving between the list and the header */
-  --place-glide-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --place-photo-step: 40ms; /* between photos in the cascade */
+  --deck-settle: 420ms;     /* cards moving up the deck */
+  --deck-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --reveal-fade: 0.25s; /* ease-out, from the WorkCardReveal prototype */
 }
 
@@ -158,8 +163,6 @@
     --type-display-medium: 500 22px/1.3 var(--font-sans);
     --type-body-large: 400 16px/1.4 var(--font-sans);
     --type-accent: 400 12px/1.2 var(--font-accent);
-    --type-place-title: 400 18px/1.2 var(--font-sans);
-    --type-place-description: 400 14px/1.2 var(--font-sans);
 
     --gutter: 20px;
     --radius-card: var(--space-3);
@@ -168,10 +171,11 @@
     --place-row-even: 72px;
     --place-row-gap: var(--space-6);
     --places-list-padding: 0;
-    --place-thumb-unit: 0.35px;
-    --place-header-gap: var(--space-2);
-    --place-photos-gap: var(--space-3);
-    --place-photos-padding: 0;
+    --deck-space-top: 110fr;
+    --deck-space-bottom: 203fr;
+    --deck-close-gap: 23px;
+    --deck-zoom-edge: var(--gutter);
+    --deck-zoom-top: var(--space-3);
   }
 }
 
@@ -197,6 +201,7 @@
     --surface-polaroid-border-fill: #b5b2ac;
     --surface-polaroid-photo-fill: #b5b2ac;
     --text-polaroid: #5f5d59;
+    --text-deck-hint: #8a8a8a;
     --surface-hero-base-fill: #101010;
     --surface-hero-polaroid-fill: #dcd8d0;
     --surface-hero-polaroid-border-fill: #c7c3bb;
@@ -222,6 +227,7 @@
   --surface-polaroid-border-fill: #b5b2ac;
   --surface-polaroid-photo-fill: #b5b2ac;
   --text-polaroid: #5f5d59;
+  --text-deck-hint: #8a8a8a;
   --surface-hero-base-fill: #101010;
   --surface-hero-polaroid-fill: #dcd8d0;
   --surface-hero-polaroid-border-fill: #c7c3bb;

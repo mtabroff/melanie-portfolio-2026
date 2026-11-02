@@ -913,186 +913,267 @@ a.polaroid-stack:focus-visible .polaroid-front {
   }
 }
 
-/* ---------- place page ---------- */
+/* ---------- places deck ---------- */
 
-/* main.js sets data-place while a place is open. The list stays in the page, just hidden. */
-html[data-place] #app,
-html[data-place] .skip-link {
-  display: none;
-}
-
-.place-view {
-  width: min(var(--place-view-width), 100% - 2 * var(--gutter));
-  margin-inline: auto;
-  padding-block: var(--space-6);
-}
-
-.place-view-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--place-header-gap);
-}
-
-.place-view-intro {
-  display: flex;
-  align-items: center;
-  gap: var(--place-header-gap);
-  min-width: 0;
-}
-
-/* The list's stack at header size. Everything inside it scales with the unit. */
-.place-view-stack {
-  --polaroid-unit: var(--place-thumb-unit);
-  --stack-width: calc(268.467 * var(--polaroid-unit));
-  flex: none;
-}
-
-.place-view-stack .polaroid {
-  border-width: calc(0.37 * var(--polaroid-unit));
-  box-shadow:
-    calc(4.729 * var(--polaroid-unit)) calc(4.729 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04),
-    calc(0.473 * var(--polaroid-unit)) calc(0.473 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) calc(1.892 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04);
-}
-
-.place-view-stack .polaroid-caption {
-  font-size: calc(14 * var(--polaroid-unit));
-}
-
-.place-view-title {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.place-view-title h1 {
-  font: var(--type-place-title);
-  letter-spacing: var(--tracking-body-large);
-  outline: none; /* focused from main.js for screen readers, not something to tab to */
-}
-
-.place-view-title p {
-  font: var(--type-place-description);
-  letter-spacing: var(--tracking-body-small);
-  color: var(--text-secondary);
-  /* Hidden for now. The one-line slot stays so the header won't shift when these come back. */
-  height: 1lh;
-  overflow: hidden;
+/* A shared place link opens the deck over the list, which shouldn't flash first. */
+html[data-place] #app {
   visibility: hidden;
 }
 
-.place-view-close {
+html.deck-open {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* Full bleed means all of it, so the space kept for a scrollbar goes too. */
+html.deck-open:has(.deck-zoom:not([hidden])) {
+  scrollbar-gutter: auto;
+}
+
+.deck {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: none;
+  color: var(--text-primary);
+}
+
+/* The space above and below is split as in Figma, so the deck sits a little above center. */
+.deck[open] {
+  display: grid;
+  grid-template-rows: var(--deck-space-top) auto var(--deck-space-bottom);
+  justify-items: center;
+}
+
+.deck::backdrop {
+  background: none;
+}
+
+.deck-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-page);
+}
+
+.deck-body {
   position: relative;
-  flex-shrink: 0;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  width: var(--deck-card-width);
+}
+
+.deck-close {
+  position: relative;
+  align-self: flex-end;
   display: flex;
   align-items: center;
   gap: var(--space-half);
+  margin-bottom: var(--deck-close-gap);
   font: var(--type-body-small);
   letter-spacing: var(--tracking-body-small);
   line-height: 1.2;
   color: var(--text-secondary);
 }
 
-.place-view-close:hover {
+.deck-close:hover {
   color: var(--text-primary);
 }
 
 /* Larger tap area without changing the spacing from Figma. */
-.place-view-close::after {
+.deck-close::after,
+.deck-zoom-close::after {
   content: '';
   position: absolute;
   inset: -12px;
 }
 
-.place-photos {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-2);
-  margin-top: var(--place-photos-gap);
-  padding: var(--place-photos-padding);
+.deck-stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  cursor: pointer;
+  isolation: isolate; /* the cards' z-indexes stay inside the deck, below the full-bleed view */
+  touch-action: none; /* a swipe moves the card, and a double-tap shouldn't zoom the page */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.place-photo {
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: 12px;
+/* The arrow keys work from anywhere in the deck, so the ring only shows when tabbing. */
+.deck:not(.is-tabbing) .deck-stage:focus-visible,
+.deck:not(.is-tabbing) .deck-zoom-close:focus-visible {
+  outline: none;
+}
+
+.deck-card {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-polaroid);
+  box-shadow:
+    inset 0 0 0 var(--deck-unit) var(--surface-deck-card-edge),
+    0 calc(8 * var(--deck-unit)) calc(24 * var(--deck-unit)) rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  transition:
+    transform var(--deck-settle) var(--deck-ease),
+    box-shadow var(--deck-settle) var(--deck-ease),
+    opacity 200ms ease-out;
+}
+
+/* The photo sits on the paper, and only shows on the top card. */
+.deck-face {
+  position: absolute;
+  inset: 0;
   background: var(--surface-placeholder);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
 }
 
-.place-photo img {
+.deck-face img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* ---------- place transition ---------- */
-
-/*
- * Opening, about 700ms: the page fades, the stack glides into the header, the text
- * fades in, then the photos cascade. Closing runs the same steps the other way.
- * The classes are set in main.js, only when the stack is moving.
- */
-::view-transition {
-  background: var(--surface-page);
+.deck-card[data-depth='0'] {
+  z-index: 4;
+  box-shadow:
+    inset 0 0 0 var(--deck-unit) var(--surface-deck-card-edge),
+    0 calc(12 * var(--deck-unit)) calc(32 * var(--deck-unit)) rgba(0, 0, 0, 0.16);
 }
 
-.place-opening::view-transition-old(root),
-.place-closing::view-transition-old(root) {
-  z-index: 1;
-  mix-blend-mode: normal;
-  animation: place-fade-out var(--place-fade) ease-out both;
+.deck-card[data-depth='0'] .deck-face {
+  opacity: 1;
 }
 
-.place-opening::view-transition-new(root) {
-  mix-blend-mode: normal;
-  animation: none;
+.deck-card[data-depth='1'] {
+  z-index: 3;
+  transform: rotate(var(--deck-tilt-near));
 }
 
-.place-closing::view-transition-new(root) {
-  mix-blend-mode: normal;
-  animation: place-fade-in 200ms ease-out calc(var(--place-fade) + var(--place-glide) - 100ms) both;
-}
-
-::view-transition-group(place-stack),
-::view-transition-old(place-stack),
-::view-transition-new(place-stack) {
-  animation-duration: var(--place-glide);
-  animation-delay: var(--place-fade);
-  animation-timing-function: var(--place-glide-ease);
-}
-
-::view-transition-group(place-stack) {
+.deck-card[data-depth='2'] {
   z-index: 2;
+  transform: rotate(var(--deck-tilt-far));
 }
 
-.place-view.is-cascading .place-view-title,
-.place-view.is-cascading .place-view-close {
-  animation: place-fade-in 200ms ease-out 350ms both;
+/* Waiting behind the deck, in the last card's position so it can fade in from there. */
+.deck-card[data-depth='3'] {
+  z-index: 1;
+  transform: rotate(var(--deck-tilt-far));
+  opacity: 0;
 }
 
-.place-view.is-cascading .place-photo {
-  animation: place-fade-up 200ms ease-out both;
-  animation-delay: calc(380ms + var(--i) * var(--place-photo-step));
+.deck-card.is-dragging {
+  transition: none;
 }
 
-@keyframes place-fade-in {
-  from {
-    opacity: 0;
-  }
+.deck-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 20px;
+  margin-top: var(--space-3);
+  font: var(--type-body-small);
+  letter-spacing: var(--tracking-body-small);
+  line-height: 1.2;
 }
 
-@keyframes place-fade-out {
-  to {
-    opacity: 0;
-  }
+.deck-title {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--text-primary);
 }
 
-@keyframes place-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(var(--space-2));
-  }
+.deck-count {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Out of the flow, so the deck stays put between the first open and the rest. */
+.deck-hint {
+  position: absolute;
+  top: calc(100% + 28px);
+  left: 0;
+  right: 0;
+  font: var(--type-label);
+  line-height: 15px;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--text-deck-hint);
+}
+
+/* Full bleed: stays dark in both themes, and the text stays white over the photo. */
+.deck-zoom {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--surface-deck-zoom);
+  font: var(--type-body-small);
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: #ffffff;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.deck-zoom-photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.deck-zoom-scrim {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 160px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.deck-zoom-caption {
+  position: absolute;
+  right: var(--deck-zoom-edge);
+  bottom: 28px;
+  left: var(--deck-zoom-edge);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 20px;
+}
+
+.deck-zoom-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.deck-zoom-close {
+  position: absolute;
+  top: var(--deck-zoom-top);
+  right: var(--deck-zoom-edge);
+  font: inherit;
+  color: inherit;
 }
 
 /* ---------- contact / footer ---------- */
@@ -1230,16 +1311,6 @@ html[data-place] .skip-link {
     padding-block: var(--space-6);
   }
 
-  /* On a phone the title can wrap, so close stays in the top corner. */
-  .place-view-header {
-    align-items: flex-start;
-  }
-
-  .place-photos {
-    grid-template-columns: 1fr;
-    gap: var(--gap-side-links);
-  }
-
   .contact {
     min-height: 0;
     padding-block: 0 var(--space-4);
@@ -1264,7 +1335,9 @@ html[data-place] .skip-link {
     scroll-behavior: auto;
   }
 
-  .polaroid {
+  .polaroid,
+  .deck-card,
+  .deck-face {
     transition: none;
   }
 
