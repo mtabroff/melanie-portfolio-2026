@@ -126,16 +126,16 @@
   --hero-fade-end: 87.53%;
   --hero-tilt: -2deg;
   /* 420 wide on desktop and 311 on a 375 phone, and always leaves room for the close and caption. */
-  --deck-card-width: min(420px, 100vw - 64px, (100vh - 124px) * 3 / 4);
-  --deck-card-width: min(420px, 100vw - 64px, (100dvh - 124px) * 3 / 4);
+  --deck-card-width: min(420px, 100vw - 64px, (100vh - var(--deck-caption-gap) - 100px) * 3 / 4);
+  --deck-card-width: min(420px, 100vw - 64px, (100dvh - var(--deck-caption-gap) - 100px) * 3 / 4);
   --deck-unit: calc(var(--deck-card-width) / 420); /* edges and shadows shrink with the card, as in Figma */
   --deck-tilt-near: 4deg;  /* Figma's rotation runs the opposite way to CSS, so its -4 is 4 here */
   --deck-tilt-far: -5deg;  /* and its 5 is -5 */
-  --deck-space-top: 56fr;
-  --deck-space-bottom: 124fr;
-  --deck-close-gap: 31px;
-  --deck-zoom-edge: var(--space-6);
-  --deck-zoom-top: var(--space-5);
+  --deck-space-top: 104fr;
+  --deck-space-bottom: 108fr;
+  --deck-caption-gap: var(--space-5);
+  --deck-page-edge: var(--space-6); /* the close and the full-bleed caption, from the page edge */
+  --deck-page-top: var(--space-5);
   --contact-min-height: 665px;
   --contact-photo-width: max(var(--hero-photo-zoom-vw), var(--hero-photo-min-width));
   --contact-photo-height: calc(var(--contact-photo-width) * 1.2523); /* Figma stretches the crop slightly here */
@@ -171,11 +171,11 @@
     --place-row-even: 72px;
     --place-row-gap: var(--space-6);
     --places-list-padding: 0;
-    --deck-space-top: 110fr;
-    --deck-space-bottom: 203fr;
-    --deck-close-gap: 23px;
-    --deck-zoom-edge: var(--gutter);
-    --deck-zoom-top: var(--space-3);
+    --deck-space-top: 150fr;
+    --deck-space-bottom: 195.33fr;
+    --deck-caption-gap: var(--space-4);
+    --deck-page-edge: var(--gutter);
+    --deck-page-top: var(--space-3);
   }
 }
 

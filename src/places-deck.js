@@ -2,8 +2,12 @@
 // place has its own URL, so back works and a /places/japan link can be shared.
 // The list stays behind the dialog, so closing returns to the exact spot it was opened from.
 
-const OPEN_MS = 420
-const CLOSE_MS = 340
+// Opening, about 450ms: the front photo becomes the top card, the back polaroids become the
+// paper cards, and the frames and the rest of the page fade. The caption and close come last.
+const MORPH_MS = 450
+const FRAME_FADE_MS = 100
+const CHROME_OUT_MS = 80 // closing: the caption and close go first
+const LANDING_MS = 180 // closing: by here the settle ease has the cards nearly home
 const ZOOM_MS = 360
 const FADE_MS = 200
 const FLIGHT_MS = 560
@@ -15,10 +19,10 @@ const SWIPE_SHARE = 0.18 // of the card width, how far a drag has to go to send 
 const DOUBLE_TAP_MS = 260 // a single tap waits this long, in case it turns out to be a double
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const EASE_IN_OUT = 'cubic-bezier(0.45, 0, 0.2, 1)'
+const EASE_SETTLE = 'cubic-bezier(0.2, 0, 0, 1)'
 const HINT_KEY = 'deck-hint-seen'
 
-// Each place's slots, starting with the stack's front photo so the opening reads as one
-// object. The next two then match the polaroids behind it.
+// Each place's slots, starting with the stack's front photo so the opening reads as one object.
 function photosFor(link, slug) {
   const slots = document.querySelectorAll(`.place-photos[data-place="${slug}"] .place-photo`)
   const photos = [...slots].map((slot) => {
@@ -72,6 +76,7 @@ export function initPlacesDeck() {
   )
   const dialog = document.querySelector('.deck')
   const scrim = dialog.querySelector('.deck-scrim')
+  const ghost = dialog.querySelector('.deck-ghost')
   const body = dialog.querySelector('.deck-body')
   const closeButton = dialog.querySelector('.deck-close')
   const stage = dialog.querySelector('.deck-stage')
@@ -93,6 +98,7 @@ export function initPlacesDeck() {
   let cards = []
   let index = 0
   let closing = false
+  let morphing = false
   let closeRequested = false
   let zoomed = false
   let press = null
@@ -110,19 +116,156 @@ export function initPlacesDeck() {
     status.textContent = `photo ${index + 1} of ${total}${alt ? `: ${alt}` : ''}`
   }
 
-  // Where a card has to be drawn to sit exactly over one of the stack's polaroids.
+  // The back cards in deck order. The stacking matches, so nothing crosses over on the way.
+  function backPolaroid(depth) {
+    return link.querySelector(depth === 1 ? '.polaroid-back-right' : '.polaroid-back-left')
+  }
+
+  // Where a back card has to be drawn to sit exactly over its polaroid.
   function stackTransform(depth) {
-    const polaroid = link.querySelector(
-      ['.polaroid-front', '.polaroid-back-left', '.polaroid-back-right'][depth],
-    )
+    const polaroid = backPolaroid(depth)
     const from = polaroid.getBoundingClientRect()
     const to = stage.getBoundingClientRect()
     const x = from.left + from.width / 2 - (to.left + to.width / 2)
     const y = from.top + from.height / 2 - (to.top + to.height / 2)
     const scale = polaroid.offsetWidth / stage.offsetWidth
-    const matrix = new DOMMatrixReadOnly(getComputedStyle(polaroid).transform)
-    const angle = Math.atan2(matrix.b, matrix.a)
-    return `translate(${x}px, ${y}px) rotate(${angle}rad) scale(${scale})`
+    return `translate(${x}px, ${y}px) rotate(${angleOf(polaroid)}rad) scale(${scale})`
+  }
+
+  function angleOf(element) {
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform)
+    return Math.atan2(matrix.b, matrix.a)
+  }
+
+  // The top card's box over the front polaroid's photo. Its size changes rather than its scale,
+  // so object-fit reveals more of the photo as the square becomes 3:4.
+  function photoBox() {
+    const from = link.querySelector('.polaroid-front .polaroid-photo').getBoundingClientRect()
+    const to = stage.getBoundingClientRect()
+    return {
+      left: `${from.left - to.left}px`,
+      top: `${from.top - to.top}px`,
+      width: `${from.width}px`,
+      height: `${from.height}px`,
+    }
+  }
+
+  function showGhost({ frameOnly }) {
+    const front = link.querySelector('.polaroid-front')
+    const clone = front.cloneNode(true)
+    clone.style.transform = getComputedStyle(front).transform
+    const box = link.getBoundingClientRect()
+    Object.assign(ghost.style, {
+      left: `${box.left}px`,
+      top: `${box.top}px`,
+      width: `${box.width}px`,
+      height: `${box.height}px`,
+    })
+    ghost.classList.toggle('is-frame-only', frameOnly)
+    ghost.replaceChildren(clone)
+    ghost.hidden = false
+  }
+
+  function addCardPolaroid(card, depth) {
+    const polaroid = backPolaroid(depth).cloneNode(true)
+    polaroid.classList.add('deck-card-polaroid')
+    card.append(polaroid)
+    return polaroid
+  }
+
+  function clearMorph() {
+    morphing = false
+    ghost.getAnimations().forEach((animation) => animation.cancel())
+    ghost.hidden = true
+    ghost.replaceChildren()
+    stage.querySelectorAll('.deck-card-polaroid').forEach((polaroid) => polaroid.remove())
+  }
+
+  function morphOpen() {
+    morphing = true
+    showGhost({ frameOnly: true })
+    const motion = [
+      scrim.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }),
+      ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FRAME_FADE_MS, easing: 'ease-out', fill: 'forwards' }),
+    ]
+    for (const card of visibleCards()) {
+      const depth = Number(card.dataset.depth)
+      if (depth === 0) {
+        motion.push(
+          card.animate(
+            [
+              { ...photoBox(), boxShadow: 'inset 0 0 0 0 transparent, 0 0 0 0 transparent' },
+              { left: '0px', top: '0px', width: `${stage.offsetWidth}px`, height: `${stage.offsetHeight}px` },
+            ],
+            { duration: MORPH_MS, easing: EASE_SETTLE },
+          ),
+        )
+      } else {
+        // Written as the same list at both ends, so the rotation itself is what interpolates.
+        const end = `translate(0px, 0px) rotate(${angleOf(card)}rad) scale(1)`
+        motion.push(
+          card.animate([{ transform: stackTransform(depth) }, { transform: end }], {
+            duration: MORPH_MS,
+            easing: EASE_SETTLE,
+          }),
+          addCardPolaroid(card, depth).animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: FRAME_FADE_MS,
+            easing: 'ease-out',
+            fill: 'forwards',
+          }),
+        )
+      }
+    }
+    fadeChrome([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, delay: MORPH_MS, fill: 'backwards' })
+    Promise.all(motion.map((animation) => animation.finished)).then(clearMorph, () => {})
+  }
+
+  function morphClose() {
+    const landing = CHROME_OUT_MS + LANDING_MS
+    const fadeIn = { duration: FRAME_FADE_MS, delay: landing, easing: 'ease-out', fill: 'both' }
+    const cards = visibleCards().map((card) => {
+      const style = getComputedStyle(card)
+      return {
+        card,
+        depth: Number(card.dataset.depth),
+        transform: style.transform,
+        box: { left: style.left, top: style.top, width: style.width, height: style.height },
+      }
+    })
+    // Closing can interrupt the opening or a card in flight, and carries on from where they were.
+    stage.getAnimations({ subtree: true }).forEach((animation) => animation.cancel())
+    clearMorph()
+    showGhost({ frameOnly: false })
+    const timing = { duration: MORPH_MS, delay: CHROME_OUT_MS, easing: EASE_SETTLE, fill: 'both' }
+    const motion = [
+      ...fadeChrome([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' }),
+      ghost.animate([{ opacity: 0 }, { opacity: 1 }], fadeIn),
+      scrim.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: FADE_MS,
+        delay: landing - FADE_MS / 2,
+        easing: 'ease-out',
+        fill: 'both',
+      }),
+    ]
+    for (const { card, depth, transform, box } of cards) {
+      if (depth === 0) {
+        motion.push(
+          card.animate([box, photoBox()], timing),
+          // The list's front photo may not be this one, so it hands over right at the end.
+          card.animate([{ opacity: 1, offset: 0 }, { opacity: 1, offset: 0.85 }, { opacity: 0, offset: 1 }], {
+            duration: MORPH_MS,
+            delay: CHROME_OUT_MS,
+            fill: 'both',
+          }),
+        )
+      } else {
+        motion.push(
+          card.animate([{ transform }, { transform: stackTransform(depth) }], timing),
+          addCardPolaroid(card, depth).animate([{ opacity: 0 }, { opacity: 1 }], fadeIn),
+        )
+      }
+    }
+    return Promise.all(motion.map((animation) => animation.finished.catch(() => {})))
   }
 
   function visibleCards() {
@@ -179,16 +322,7 @@ export function initPlacesDeck() {
       return
     }
 
-    scrim.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' })
-    visibleCards().forEach((card) => {
-      const depth = Number(card.dataset.depth)
-      card.animate([{ transform: stackTransform(depth) }, {}], { duration: OPEN_MS, easing: EASE_OUT })
-      // The polaroids behind the front one keep their photos until they've turned to paper.
-      if (depth > 0) {
-        card.firstChild.animate([{ opacity: 1 }, {}], { duration: OPEN_MS, easing: 'ease-in' })
-      }
-    })
-    fadeChrome([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, delay: 220, fill: 'backwards' })
+    morphOpen()
   }
 
   async function close({ animate = true } = {}) {
@@ -203,29 +337,13 @@ export function initPlacesDeck() {
     if (stackRect.bottom < 0 || stackRect.top > window.innerHeight) {
       link.scrollIntoView({ block: 'center', behavior: 'instant' })
     }
-    link.style.visibility = ''
 
     if (animate && reducedMotion.matches) {
       await dialog
         .animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease-out', fill: 'forwards' })
         .finished.catch(() => {})
     } else if (animate) {
-      const motion = visibleCards().map((card) => {
-        const start = getComputedStyle(card).transform
-        return card.animate(
-          [
-            { transform: start, opacity: 1, offset: 0 },
-            { opacity: 1, offset: 0.7 },
-            { transform: stackTransform(Number(card.dataset.depth)), opacity: 0, offset: 1 },
-          ],
-          { duration: CLOSE_MS, easing: EASE_OUT, fill: 'forwards' },
-        )
-      })
-      motion.push(
-        scrim.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CLOSE_MS, easing: 'ease-out', fill: 'forwards' }),
-        ...fadeChrome([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' }),
-      )
-      await Promise.all(motion.map((animation) => animation.finished.catch(() => {})))
+      await morphClose()
     }
     dialog.close()
   }
@@ -244,7 +362,7 @@ export function initPlacesDeck() {
   }
 
   function send(direction = -1, from) {
-    if (cards.length < 2 || closing || zoomed) return
+    if (cards.length < 2 || closing || zoomed || morphing) return
     const card = cards[index]
     const start = from ?? getComputedStyle(card).transform
     index = (index + 1) % cards.length
@@ -275,7 +393,7 @@ export function initPlacesDeck() {
 
   // The reverse of send: the back card swings out from behind the deck and lands on top.
   function bringBack() {
-    if (cards.length < 2 || closing || zoomed) return
+    if (cards.length < 2 || closing || zoomed || morphing) return
     const card = cards[(index - 1 + cards.length) % cards.length]
     const style = getComputedStyle(card)
     const start = style.transform
@@ -314,7 +432,7 @@ export function initPlacesDeck() {
   }
 
   function enterZoom() {
-    if (zoomed || closing) return
+    if (zoomed || closing || morphing) return
     zoomed = true
     const { src } = photos[index]
     zoomPhoto.hidden = !src
@@ -322,6 +440,7 @@ export function initPlacesDeck() {
     zoomCount.textContent = `${count.textContent} · ${mouse.matches ? 'double-click' : 'double-tap'} to exit`
     zoom.hidden = false
     body.inert = true
+    closeButton.inert = true
     zoomClose.focus({ preventScroll: true })
 
     if (reducedMotion.matches) {
@@ -346,6 +465,7 @@ export function initPlacesDeck() {
     if (!zoomed) return
     zoomed = false
     body.inert = false
+    closeButton.inert = false
     stage.focus({ preventScroll: true })
 
     const motion = reducedMotion.matches
@@ -365,6 +485,7 @@ export function initPlacesDeck() {
     zoomed = false
     zoom.hidden = true
     body.inert = false
+    closeButton.inert = false
     for (const element of [zoom, zoomPhoto, zoomScrim, zoomCaption, zoomClose]) {
       element.getAnimations().forEach((animation) => animation.cancel())
     }
@@ -382,7 +503,7 @@ export function initPlacesDeck() {
   }
 
   stage.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0 || closing) return
+    if (event.button !== 0 || closing || morphing) return
     stage.setPointerCapture(event.pointerId)
     press = { x: event.clientX, y: event.clientY, dragging: false }
   })
@@ -480,13 +601,16 @@ export function initPlacesDeck() {
     for (const element of [scrim, caption, closeButton, hint, dialog]) {
       element.getAnimations().forEach((animation) => animation.cancel())
     }
+    clearMorph()
     root.classList.remove('deck-open')
+    const tabbing = dialog.classList.contains('is-tabbing')
     dialog.classList.remove('is-tabbing')
     stage.replaceChildren()
     document.title = siteTitle
     history.scrollRestoration = 'auto'
     link.style.visibility = ''
-    link.focus({ preventScroll: true })
+    // Without the ring, and the fan that comes with it, unless someone is tabbing.
+    link.focus({ preventScroll: true, focusVisible: tabbing })
     link = null
     press = null
     lastTap = null

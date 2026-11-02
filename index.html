@@ -419,11 +419,8 @@
 
   <dialog class="deck" aria-labelledby="deck-title">
     <div class="deck-scrim"></div>
+    <div class="deck-ghost" aria-hidden="true" hidden></div>
     <div class="deck-body">
-      <button class="deck-close" type="button">
-        close
-        <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
-      </button>
       <button class="deck-stage" type="button" aria-label="next photo" autofocus></button>
       <div class="deck-caption">
         <h2 class="deck-title" id="deck-title"></h2>
@@ -431,6 +428,10 @@
       </div>
       <p class="deck-hint" hidden>swipe for next · tap outside to close</p>
     </div>
+    <button class="deck-close" type="button">
+      close
+      <img src="/src/assets/icons/close-small.svg" width="12" height="12" alt="">
+    </button>
     <div class="deck-zoom" hidden>
       <img class="deck-zoom-photo" alt="">
       <div class="deck-zoom-scrim"></div>
