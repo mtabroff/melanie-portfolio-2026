@@ -1147,13 +1147,13 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   color: var(--text-deck-hint);
 }
 
-/* Full bleed: stays dark in both themes, and the text stays white over the photo. */
+/* Full bleed: on the current theme's page, with the text white over the photo. */
 .deck-zoom {
   position: absolute;
   inset: 0;
   z-index: 60; /* above a card in flight */
   overflow: hidden;
-  background: var(--surface-deck-zoom);
+  background: var(--surface-page);
   font: var(--type-body-small);
   line-height: 1.2;
   letter-spacing: 0;
@@ -1161,6 +1161,15 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* A placeholder slot has no photo to put the white text over. */
+.deck-zoom.is-empty {
+  color: var(--text-primary);
+}
+
+.deck-zoom.is-empty .deck-zoom-scrim {
+  display: none;
 }
 
 .deck-zoom-photo {

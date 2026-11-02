@@ -33,7 +33,6 @@
   --text-hero-polaroid: #101010; /* stays dark on the paper in both themes */
   --text-deck-hint: #999999;   /* hardcoded on the hint in Figma */
   --surface-deck-card-edge: rgba(0, 0, 0, 0.06);
-  --surface-deck-zoom: #121212; /* stays dark in both themes */
   --scrollbar-thumb: rgba(0, 0, 0, 0.2);
 
   color-scheme: light;

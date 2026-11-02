@@ -436,6 +436,7 @@ export function initPlacesDeck() {
     zoomed = true
     const { src } = photos[index]
     zoomPhoto.hidden = !src
+    zoom.classList.toggle('is-empty', !src)
     if (src) zoomPhoto.src = src
     zoomCount.textContent = `${count.textContent} · ${mouse.matches ? 'double-click' : 'double-tap'} to exit`
     zoom.hidden = false
