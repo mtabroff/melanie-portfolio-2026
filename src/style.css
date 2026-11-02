@@ -36,6 +36,7 @@ img {
 
 p {
   margin: 0;
+  text-wrap: pretty;
 }
 
 ul,
@@ -133,6 +134,35 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+/* Hidden while the hero, with the name on its polaroid, is on screen. */
+.nav-name {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font: var(--type-label-medium);
+  letter-spacing: var(--tracking-label);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
+}
+
+.site-nav.is-past-hero .nav-name {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease;
+}
+
+/* Here the work side panel reaches into this corner, so the name takes two lines to clear it. */
+@media (min-width: 1200px) and (max-width: 1279px) {
+  .nav-name {
+    width: 62px;
+    white-space: normal;
+  }
 }
 
 .nav-list {
@@ -445,6 +475,7 @@ h3 {
 .hero .lede {
   padding-top: var(--space-3);
   text-align: center;
+  text-wrap: balance;
 }
 
 .hero-cue {
@@ -1281,6 +1312,11 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     display: none;
   }
 
+  .nav-name {
+    top: var(--space-2);
+    left: var(--gutter);
+  }
+
   .nav-list {
     flex-direction: row;
     gap: var(--space-2);
@@ -1377,7 +1413,9 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
   .polaroid,
   .deck-card,
-  .deck-face {
+  .deck-face,
+  .nav-name,
+  .site-nav.is-past-hero .nav-name {
     transition: none;
   }
 

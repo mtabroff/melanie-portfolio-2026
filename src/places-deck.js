@@ -21,6 +21,7 @@ const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const EASE_IN_OUT = 'cubic-bezier(0.45, 0, 0.2, 1)'
 const EASE_SETTLE = 'cubic-bezier(0.2, 0, 0, 1)'
 const HINT_KEY = 'deck-hint-seen'
+const FULL_BLEED_ENABLED = false // off for now. Turning it on brings back double-tap, and its short wait on a tap.
 
 // Each place's slots, starting with the stack's front photo so the opening reads as one object.
 function photosFor(link, slug) {
@@ -539,6 +540,10 @@ export function initPlacesDeck() {
     const { dragging, x } = press
     press = null
     if (!dragging) {
+      if (!FULL_BLEED_ENABLED) {
+        send()
+        return
+      }
       clearTimeout(tapTimer)
       tapTimer = null
       if (isDoubleTap(event)) {

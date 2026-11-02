@@ -17,6 +17,8 @@ const desktop = window.matchMedia('(min-width: 960px)')
 const panelLayout = window.matchMedia('(min-width: 1200px)')
 
 const projects = [...document.querySelectorAll('.project')]
+const siteNav = document.querySelector('.site-nav')
+const hero = document.querySelector('.hero')
 
 // A card's text is fully shown until its center is this far (px) from the viewport center,
 // then fades out by PANEL_FADE_END. Cards are 568px apart, so the fades just overlap
@@ -64,6 +66,7 @@ let ticking = false
 
 function update() {
   ticking = false
+  siteNav.classList.toggle('is-past-hero', hero.getBoundingClientRect().bottom <= 0)
   updateSections()
   updatePanel()
 }
