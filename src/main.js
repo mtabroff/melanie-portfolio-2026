@@ -2,6 +2,8 @@
 // the work card reveal, the place pages, and the theme toggle.
 // (Still to come later: weather widget.)
 
+import { createPlacesDeck, isDeckMode } from './places-deck.js'
+
 const root = document.documentElement
 const sections = [...document.querySelectorAll('#main > section[id]')]
 const navLinks = new Map(
@@ -135,6 +137,9 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 const siteTitle = document.title
 const STACK_NAME = 'place-stack'
 
+// Temporary: ?places=deck opens stacks as a card deck instead, to compare the two.
+const placesDeck = isDeckMode() ? createPlacesDeck() : null
+
 let currentPlace = null
 let listScrollY = null
 let transitionId = 0
@@ -254,6 +259,10 @@ for (const [slug, link] of placeLinks) {
     // Let a new-tab click or similar do what it normally does.
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     event.preventDefault()
+    if (placesDeck) {
+      placesDeck.open(link, placeViews.get(slug))
+      return
+    }
     history.scrollRestoration = 'manual'
     history.pushState({ fromList: true }, '', link.pathname)
     goToPlace(slug)
