@@ -10,7 +10,7 @@ const CHROME_OUT_MS = 80 // closing: the caption and close go first
 const LANDING_MS = 180 // closing: by here the settle ease has the cards nearly home
 const ZOOM_MS = 360
 const FADE_MS = 200
-const FLIGHT_MS = 560
+const FLIGHT_MS = 280
 const FLIGHT_TURN = 0.45 // the share of a flight when the card passes behind or in front of the deck
 const THROW = 0.72 // how far a card travels before it turns, as a share of its width
 const TILT = 7
@@ -18,45 +18,59 @@ const TAP_SLOP = 8 // px of movement before a press counts as a drag
 const SWIPE_SHARE = 0.18 // of the card width, how far a drag has to go to send the card
 const DOUBLE_TAP_MS = 260 // a single tap waits this long, in case it turns out to be a double
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
-const EASE_IN_OUT = 'cubic-bezier(0.45, 0, 0.2, 1)'
 const EASE_SETTLE = 'cubic-bezier(0.2, 0, 0, 1)'
+const LOAD_AHEAD = 3 // cards behind the top one that load early, so the next one is ready
 const HINT_KEY = 'deck-hint-seen'
 const FULL_BLEED_ENABLED = false // off for now. Turning it on brings back double-tap, and its short wait on a tap.
 
-// Each place's slots, starting with the stack's front photo so the opening reads as one object.
-function photosFor(link, slug) {
+// Each place's slots. The first is the stack's front photo, so the opening reads as one object.
+function photosFor(slug) {
   const slots = document.querySelectorAll(`.place-photos[data-place="${slug}"] .place-photo`)
-  const photos = [...slots].map((slot) => {
+  return [...slots].map((slot) => {
+    const media = slot.firstElementChild
     const image = slot.querySelector('img')
-    return { src: image?.src, alt: image?.alt ?? '' }
+    if (media?.matches('video')) {
+      return { media, isVideo: true, src: media.poster, alt: media.getAttribute('aria-label') ?? '' }
+    }
+    return { media, isVideo: false, src: image?.src, alt: image?.alt ?? '' }
   })
-  const frontSrc = link.querySelector('.polaroid-front img')?.src
-  const front = frontSrc ? photos.findIndex((photo) => photo.src === frontSrc) : -1
-  if (front > 0) photos.unshift(...photos.splice(front, 1))
-  return photos
 }
 
-function makeCard(photo) {
+function makeCard() {
   const card = document.createElement('div')
   card.className = 'deck-card'
   const face = document.createElement('div')
   face.className = 'deck-face'
-  if (photo.src) {
-    const image = document.createElement('img')
-    image.src = photo.src
-    image.alt = ''
-    image.draggable = false
-    face.append(image)
-  }
   card.append(face)
   return card
 }
 
+// Cards get their photo or video only as they near the top of the deck.
+function fillCard(card, photo) {
+  const face = card.firstChild
+  if (!photo.media || face.firstChild) return
+  const media = photo.media.cloneNode(true)
+  face.append(media)
+  if (photo.isVideo) {
+    media.removeAttribute('aria-label') // the status line announces it
+    media.muted = true
+    return
+  }
+  const image = face.querySelector('img')
+  image.alt = ''
+  image.draggable = false
+  image.loading = 'eager'
+  image.decode().catch(() => {})
+}
+
 // A photo that hasn't decoded yet would grow as an empty card.
 function imagesReady(cards) {
-  const decoded = cards.flatMap((card) =>
-    [...card.querySelectorAll('img')].map((image) => image.decode().catch(() => {})),
-  )
+  const decoded = cards.flatMap((card) => {
+    const poster = card.querySelector('video')?.poster
+    const images = [...card.querySelectorAll('img')]
+    if (poster) images.push(Object.assign(new Image(), { src: poster }))
+    return images.map((image) => image.decode().catch(() => {}))
+  })
   return Promise.race([Promise.all(decoded), new Promise((done) => setTimeout(done, 300))])
 }
 
@@ -110,11 +124,29 @@ export function initPlacesDeck() {
   function layout() {
     const total = cards.length
     cards.forEach((card, i) => {
-      card.dataset.depth = Math.min((i - index + total) % total, 3)
+      const ahead = (i - index + total) % total
+      card.dataset.depth = Math.min(ahead, 3)
+      if (ahead <= LOAD_AHEAD || ahead === total - 1) fillCard(card, photos[i])
     })
+    syncVideos()
     count.textContent = `${index + 1} / ${total}`
     const alt = photos[index].alt || (photos[index].src ? '' : 'placeholder')
-    status.textContent = `photo ${index + 1} of ${total}${alt ? `: ${alt}` : ''}`
+    const kind = photos[index].isVideo ? 'video' : 'photo'
+    status.textContent = `${kind} ${index + 1} of ${total}${alt ? `: ${alt}` : ''}`
+  }
+
+  // Only the top card plays. With reduced motion, or if the browser refuses, the poster stays.
+  function syncVideos() {
+    const canPlay = dialog.open && !document.hidden && !reducedMotion.matches
+    for (const video of stage.querySelectorAll('video')) {
+      const depth = Number(video.closest('.deck-card').dataset.depth)
+      if (depth === 0 && canPlay) {
+        video.play().catch(() => {})
+      } else {
+        video.pause()
+        video.preload = depth === 1 && canPlay ? 'auto' : 'none'
+      }
+    }
   }
 
   // The back cards in deck order. The stacking matches, so nothing crosses over on the way.
@@ -298,7 +330,7 @@ export function initPlacesDeck() {
     link = links.get(slug)
     closing = false
     closeRequested = false
-    photos = photosFor(link, slug)
+    photos = photosFor(slug)
     cards = photos.map(makeCard)
     index = 0
     const name = link.querySelector('.polaroid-front .polaroid-caption').textContent
@@ -310,6 +342,7 @@ export function initPlacesDeck() {
     await imagesReady(cards.slice(0, 3))
 
     dialog.showModal()
+    syncVideos()
     root.classList.add('deck-open')
     delete root.dataset.place
     document.title = `${name} · melanie joy tabroff`
@@ -378,9 +411,9 @@ export function initPlacesDeck() {
     fly(
       card,
       [
-        { transform: start, opacity: 1, zIndex: 50, offset: 0, easing: EASE_OUT },
+        { transform: start, opacity: 1, zIndex: 50, offset: 0, easing: EASE_SETTLE },
         { transform: out, opacity: 1, zIndex: 50, offset: FLIGHT_TURN },
-        { transform: out, opacity: 1, zIndex: 0, offset: FLIGHT_TURN, easing: EASE_IN_OUT },
+        { transform: out, opacity: 1, zIndex: 0, offset: FLIGHT_TURN, easing: EASE_SETTLE },
         { zIndex: 0, offset: 1 }, // on to wherever the deck has it by then
       ],
       // Still a photo while it's in the air, and paper once it lands at the back.
@@ -411,9 +444,9 @@ export function initPlacesDeck() {
     fly(
       card,
       [
-        { transform: start, opacity: startOpacity, zIndex: 0, offset: 0, easing: EASE_IN_OUT },
+        { transform: start, opacity: startOpacity, zIndex: 0, offset: 0, easing: EASE_SETTLE },
         { transform: out, opacity: 1, zIndex: 0, offset: FLIGHT_TURN },
-        { transform: out, opacity: 1, zIndex: 50, offset: FLIGHT_TURN, easing: EASE_OUT },
+        { transform: out, opacity: 1, zIndex: 50, offset: FLIGHT_TURN, easing: EASE_SETTLE },
         { zIndex: 50, offset: 1 },
       ],
       [
@@ -611,6 +644,12 @@ export function initPlacesDeck() {
     root.classList.remove('deck-open')
     const tabbing = dialog.classList.contains('is-tabbing')
     dialog.classList.remove('is-tabbing')
+    // Removing a video doesn't stop it downloading.
+    for (const video of stage.querySelectorAll('video')) {
+      video.pause()
+      video.removeAttribute('src')
+      video.load()
+    }
     stage.replaceChildren()
     document.title = siteTitle
     history.scrollRestoration = 'auto'
@@ -626,6 +665,8 @@ export function initPlacesDeck() {
       else history.pushState(null, '', '/')
     }
   })
+
+  document.addEventListener('visibilitychange', syncVideos)
 
   for (const [slug, stack] of links) {
     stack.addEventListener('click', (event) => {

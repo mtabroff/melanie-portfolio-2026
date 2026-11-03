@@ -150,8 +150,8 @@
   /* ---------- motion ---------- */
   --flip-duration: 600ms;
   --crossfade-duration: 300ms;
-  --deck-settle: 420ms;     /* cards moving up the deck */
-  --deck-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --deck-settle: 280ms;     /* cards moving up the deck */
+  --deck-ease: cubic-bezier(0.2, 0, 0, 1);
   --reveal-fade: 0.25s; /* ease-out, from the WorkCardReveal prototype */
 }
 

@@ -1070,7 +1070,12 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   transition: opacity 200ms ease-out;
 }
 
-.deck-face img {
+.deck-face picture {
+  display: contents;
+}
+
+.deck-face img,
+.deck-face video {
   display: block;
   width: 100%;
   height: 100%;
@@ -1086,6 +1091,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
 .deck-card[data-depth='0'] .deck-face {
   opacity: 1;
+  transition: none; /* the next photo is already there as the top card leaves */
 }
 
 .deck-card[data-depth='1'] {
