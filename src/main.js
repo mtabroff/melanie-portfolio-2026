@@ -2,7 +2,15 @@
 // the work card reveal, and the theme toggle. The places deck is in places-deck.js.
 // (Still to come later: weather widget.)
 
+import { initHubLoop } from './hub-loop.js'
 import { initPlacesDeck } from './places-deck.js'
+import { initTitanLoop } from './titan-loop.js'
+import { initWebsiteLoop } from './website-loop.js'
+import { initConciergeLoop } from './concierge-loop.js'
+import { initAllaraLoop } from './allara-loop.js'
+import { initSmartCash } from './smartcash-loop.js'
+import { initSwapLoop } from './swap-loop.js'
+import { initRebrandCard } from './rebrand-loop.js'
 
 const root = document.documentElement
 const sections = [...document.querySelectorAll('#main > section[id]')]
@@ -59,6 +67,7 @@ function updatePanel() {
     const distance = Math.abs(rect.top + rect.height / 2 - viewportCenter)
     const reveal = (PANEL_FADE_END - distance) / (PANEL_FADE_END - PANEL_HOLD)
     project.style.setProperty('--reveal', Math.min(Math.max(reveal, 0), 1))
+    project.classList.toggle('is-panel-shown', reveal > 0)
   }
 }
 
@@ -128,6 +137,14 @@ panelLayout.addEventListener('change', () => {
 })
 
 initPlacesDeck()
+initHubLoop()
+initTitanLoop()
+initWebsiteLoop()
+initConciergeLoop()
+initAllaraLoop()
+initSmartCash()
+initSwapLoop()
+initRebrandCard()
 
 // The time in the footer, in case someone reads it far from NYC.
 const nycTime = new Intl.DateTimeFormat('en-US', {

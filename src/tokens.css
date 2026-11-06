@@ -17,6 +17,7 @@
   --text-tertiary: #cfcfcf;
   --surface-z0: #ffffff;
   --surface-background: #f3f2f0;
+  --surface-background-subtle: #fffef8;
   --surface-divider: #dbdbdb;
   --surface-card-fill: #f6f5f3; /* used by WorkCard in Figma, but not a Figma variable */
   --text-project: #1b1b1b;                  /* same: hardcoded on SideColumn in Figma */
@@ -27,13 +28,16 @@
   --surface-polaroid-border-fill: #dbdbdb;
   --surface-polaroid-photo-fill: #ebebeb;
   --text-polaroid: #9f9f9f;
-  --surface-hero-base-fill: #fffef8;
   --surface-hero-polaroid-fill: #ffffff;
   --surface-hero-polaroid-border-fill: #dbdbdb;
   --text-hero-polaroid: #101010; /* stays dark on the paper in both themes */
   --text-deck-hint: #999999;   /* hardcoded on the hint in Figma */
   --surface-deck-card-edge: rgba(0, 0, 0, 0.06);
   --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --texture-opacity: 0.05; /* the Titan cards' engraving */
+  --texture-blend: normal;
+  --brand-bg-opacity: 1; /* the Somethings cards' backgrounds */
+  --allara-bg-opacity: 1;
 
   color-scheme: light;
 
@@ -48,7 +52,6 @@
   --surface-polaroid: var(--surface-polaroid-fill);
   --surface-polaroid-border: var(--surface-polaroid-border-fill);
   --surface-polaroid-photo: var(--surface-polaroid-photo-fill);
-  --surface-hero-base: var(--surface-hero-base-fill);
   --surface-hero-photo: url('./assets/melanie.jpg');
   --surface-hero-fade: linear-gradient(
     to bottom,
@@ -190,6 +193,7 @@
     --text-tertiary: #4a4a4a;
     --surface-z0: #101010;
     --surface-background: #1a1a1a;
+    --surface-background-subtle: #101010;
     --surface-divider: #2e2e2e;
     --surface-card-fill: #1c1c1b;
     --text-project: #f2f2f2;
@@ -201,10 +205,13 @@
     --surface-polaroid-photo-fill: #b5b2ac;
     --text-polaroid: #5f5d59;
     --text-deck-hint: #8a8a8a;
-    --surface-hero-base-fill: #101010;
     --surface-hero-polaroid-fill: #dcd8d0;
     --surface-hero-polaroid-border-fill: #c7c3bb;
     --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --texture-opacity: 0.04;
+    --texture-blend: screen;
+    --brand-bg-opacity: 0.7;
+    --allara-bg-opacity: 0.5;
 
     color-scheme: dark;
   }
@@ -216,6 +223,7 @@
   --text-tertiary: #4a4a4a;
   --surface-z0: #101010;
   --surface-background: #1a1a1a;
+  --surface-background-subtle: #101010;
   --surface-divider: #2e2e2e;
   --surface-card-fill: #1c1c1b;
   --text-project: #f2f2f2;
@@ -227,10 +235,13 @@
   --surface-polaroid-photo-fill: #b5b2ac;
   --text-polaroid: #5f5d59;
   --text-deck-hint: #8a8a8a;
-  --surface-hero-base-fill: #101010;
   --surface-hero-polaroid-fill: #dcd8d0;
   --surface-hero-polaroid-border-fill: #c7c3bb;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --texture-opacity: 0.04;
+  --texture-blend: screen;
+  --brand-bg-opacity: 0.7;
+  --allara-bg-opacity: 0.5;
 
   color-scheme: dark;
 }
