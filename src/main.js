@@ -1,12 +1,12 @@
 // Scroll-driven behavior (active nav state, work side panel), the hero polaroid flip,
 // the work card reveal, and the theme toggle. The places deck is in places-deck.js.
-// (Still to come later: weather widget.)
 
 import { initHubLoop } from './hub-loop.js'
 import { initPlacesDeck } from './places-deck.js'
 import { initTitanLoop } from './titan-loop.js'
 import { initWebsiteLoop } from './website-loop.js'
 import { initConciergeLoop } from './concierge-loop.js'
+import { initWeather } from './weather.js'
 import { initAllaraLoop } from './allara-loop.js'
 import { initSmartCash } from './smartcash-loop.js'
 import { initSwapLoop } from './swap-loop.js'
@@ -137,6 +137,7 @@ panelLayout.addEventListener('change', () => {
 })
 
 initPlacesDeck()
+initWeather()
 initHubLoop()
 initTitanLoop()
 initWebsiteLoop()

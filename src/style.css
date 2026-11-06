@@ -250,13 +250,28 @@ main {
   white-space: nowrap;
 }
 
-/* Painted through a mask so the icon follows the text color in both themes. */
+/* Filled in from Open-Meteo by weather.js. The line keeps its space while it loads, and stays
+   hidden if the weather can't be fetched. The placeholder text holds its height. */
+.weather-temp {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms ease-out, visibility 300ms;
+}
+
+.weather-temp.is-ready {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Phosphor's outline weather icons, in the bold weight: at 12px its line is about 1.1px,
+   closest to the 1.25px stroke of the site's other line icons. Painted through a mask in
+   their gray, which they keep in both themes. */
 .weather-icon {
   flex-shrink: 0;
-  width: 10.7585px;
+  width: 12px;
   height: 12px;
-  background: currentColor;
-  mask: url('./assets/weather.svg') center / contain no-repeat;
+  background: #9f9f9f;
+  mask: var(--weather-icon) center / contain no-repeat;
 }
 
 .side-links {
