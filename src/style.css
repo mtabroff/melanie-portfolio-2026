@@ -293,10 +293,6 @@ main {
   color: var(--text-primary);
 }
 
-.side-links a[aria-disabled='true'] {
-  cursor: default;
-}
-
 .side-links .arrow {
   display: inline-block;
   width: var(--space-1);
