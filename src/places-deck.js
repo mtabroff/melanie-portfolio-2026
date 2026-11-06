@@ -1,5 +1,5 @@
 // The places deck. Clicking a stack grows it into a deck of that place's photos, and each
-// place has its own URL, so back works and a /places/japan link can be shared.
+// place has its own URL, so back works and a /travels/japan link can be shared.
 // The list stays behind the dialog, so closing returns to the exact spot it was opened from.
 
 // Opening, about 450ms: the front photo becomes the top card, the back polaroids become the
@@ -29,8 +29,9 @@ function photosFor(slug) {
   return [...slots].map((slot) => {
     const media = slot.firstElementChild
     const image = slot.querySelector('img')
+    // A video's poster is a lazy image beside it, since a poster on the hidden slot would load with the page.
     if (media?.matches('video')) {
-      return { media, isVideo: true, src: media.poster, alt: media.getAttribute('aria-label') ?? '' }
+      return { media, isVideo: true, src: image?.src ?? media.poster, alt: media.getAttribute('aria-label') ?? '' }
     }
     return { media, isVideo: false, src: image?.src, alt: image?.alt ?? '' }
   })
@@ -52,6 +53,7 @@ function fillCard(card, photo) {
   const media = photo.media.cloneNode(true)
   face.append(media)
   if (photo.isVideo) {
+    if (photo.src) media.poster = photo.src
     media.removeAttribute('aria-label') // the status line announces it
     media.muted = true
     return
@@ -75,7 +77,7 @@ function imagesReady(cards) {
 }
 
 function placeFromUrl(links) {
-  const match = window.location.pathname.match(/^\/places\/([^/]+)\/?$/)
+  const match = window.location.pathname.match(/^\/travels\/([^/]+)\/?$/)
   return match && links.has(match[1]) ? match[1] : null
 }
 
@@ -110,6 +112,13 @@ export function initPlacesDeck() {
 
   let link = null
   let photos = []
+  // Where each stack was left, so it shows the last card viewed. This visit only, so a reload
+  // brings back the original covers.
+  const leftAt = new Map()
+  const covers = new Map(
+    [...links].map(([slug, stack]) => [slug, [...stack.querySelectorAll('.polaroid-photo')].map((frame) => frame.cloneNode(true))]),
+  )
+  const onScreen = new Set()
   let cards = []
   let index = 0
   let closing = false
@@ -301,6 +310,62 @@ export function initPlacesDeck() {
     return Promise.all(motion.map((animation) => animation.finished.catch(() => {})))
   }
 
+  // Redraws the stack from the card that's on top, so closing lands on it: its next two cards
+  // behind, as the deck has them. Back on the first card, the original cover returns.
+  function leaveStackAt(at) {
+    const slug = link.dataset.place
+    leftAt.set(slug, at)
+    const frames = [...link.querySelectorAll('.polaroid-photo')]
+    frames.forEach((frame) => frame.querySelector('video')?.pause())
+    if (at === 0) {
+      frames.forEach((frame, i) => frame.replaceWith(covers.get(slug)[i].cloneNode(true)))
+    } else {
+      const total = photos.length
+      const show = (polaroid, depth) => {
+        const photo = photos[(at + depth) % total]
+        const frame = link.querySelector(`${polaroid} .polaroid-photo`)
+        frame.replaceChildren(...(photo.media ? [stackMedia(photo, depth === 0)] : []))
+      }
+      show('.polaroid-front', 0)
+      show('.polaroid-back-right', 1)
+      show('.polaroid-back-left', 2)
+    }
+    syncStackVideos()
+  }
+
+  // A card's photo for the stack, or for a video, the video itself on top and its poster behind.
+  // The same files the deck used, so they're already loaded.
+  function stackMedia(photo, onTop) {
+    if (photo.isVideo && onTop) {
+      const video = photo.media.cloneNode(true)
+      video.removeAttribute('aria-label')
+      video.muted = true
+      if (photo.src) video.poster = photo.src
+      // Picks up where the deck's copy was.
+      const playing = cards[index]?.querySelector('video')
+      if (playing) video.currentTime = playing.currentTime
+      return video
+    }
+    if (photo.isVideo) return Object.assign(new Image(), { src: photo.src, alt: '' })
+    const media = photo.media.cloneNode(true)
+    const image = media.querySelector('img')
+    image.alt = ''
+    image.loading = 'eager'
+    return media
+  }
+
+  // A stack's video plays like the deck's top card: only while it's on screen, the deck is
+  // closed, and the page is visible, and never with reduced motion.
+  function syncStackVideos() {
+    for (const [slug, stack] of links) {
+      const video = stack.querySelector('.polaroid-front video')
+      if (!video) continue
+      const canPlay = onScreen.has(slug) && !dialog.open && !document.hidden && !reducedMotion.matches
+      if (canPlay) video.play().catch(() => {})
+      else video.pause()
+    }
+  }
+
   function visibleCards() {
     return cards.filter((card) => Number(card.dataset.depth) < 3)
   }
@@ -332,7 +397,7 @@ export function initPlacesDeck() {
     closeRequested = false
     photos = photosFor(slug)
     cards = photos.map(makeCard)
-    index = 0
+    index = leftAt.get(slug) ?? 0
     const name = link.querySelector('.polaroid-front .polaroid-caption').textContent
     title.textContent = name
     zoomTitle.textContent = name
@@ -365,6 +430,8 @@ export function initPlacesDeck() {
     clearTimeout(tapTimer)
     tapTimer = null
     leaveZoom()
+
+    leaveStackAt(index)
 
     // Opened from a shared link, the stack may be nowhere near the screen.
     const stackRect = link.getBoundingClientRect()
@@ -654,6 +721,8 @@ export function initPlacesDeck() {
     document.title = siteTitle
     history.scrollRestoration = 'auto'
     link.style.visibility = ''
+    // After the deck's gone, so the stack's video doesn't play underneath it.
+    queueMicrotask(syncStackVideos)
     // Without the ring, and the fan that comes with it, unless someone is tabbing.
     link.focus({ preventScroll: true, focusVisible: tabbing })
     link = null
@@ -666,7 +735,19 @@ export function initPlacesDeck() {
     }
   })
 
-  document.addEventListener('visibilitychange', syncVideos)
+  document.addEventListener('visibilitychange', () => {
+    syncVideos()
+    syncStackVideos()
+  })
+  reducedMotion.addEventListener('change', syncStackVideos)
+  const stackWatcher = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) onScreen.add(entry.target.dataset.place)
+      else onScreen.delete(entry.target.dataset.place)
+    }
+    syncStackVideos()
+  })
+  links.forEach((stack) => stackWatcher.observe(stack))
 
   for (const [slug, stack] of links) {
     stack.addEventListener('click', (event) => {
@@ -690,6 +771,6 @@ export function initPlacesDeck() {
     open(initial, { animate: false })
   } else {
     delete root.dataset.place
-    if (window.location.pathname.startsWith('/places/')) history.replaceState(null, '', '/')
+    if (window.location.pathname.startsWith('/travels/')) history.replaceState(null, '', '/')
   }
 }

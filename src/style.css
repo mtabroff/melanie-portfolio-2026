@@ -1691,7 +1691,14 @@ h3 {
   background: var(--surface-polaroid-photo);
 }
 
-.polaroid-photo img {
+.polaroid-photo picture {
+  display: contents;
+}
+
+/* A video shows here once someone leaves a stack on one, in places-deck.js. */
+.polaroid-photo img,
+.polaroid-photo video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;

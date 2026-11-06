@@ -108,7 +108,8 @@ async function encodeVideo(file, dir) {
   const size = `${(bytes / 1024 / 1024).toFixed(2)}MB`
   if (bytes > VIDEO_MAX_BYTES) console.error(`${name}.mp4 is still ${size} at the lowest quality, so trim the clip.`)
   else console.error(`${name}.mp4 is ${size}`)
-  console.log(`<video src="${URL_DIR}/${name}.mp4" poster="${URL_DIR}/${name}-poster.webp" preload="none" muted loop playsinline aria-label=""></video>`)
+  // The poster is a lazy image beside the video, so it loads only when the deck needs it.
+  console.log(`<video src="${URL_DIR}/${name}.mp4" preload="none" muted loop playsinline aria-label=""></video><img src="${URL_DIR}/${name}-poster.webp" loading="lazy" alt="">`)
 }
 
 const dir = mkdtempSync(join(tmpdir(), 'media-'))

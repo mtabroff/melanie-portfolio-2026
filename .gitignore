@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Source files the site doesn't load: the travel photos' originals (the deck uses their
+# AVIF/WebP versions) and the PNGs some backgrounds were made from. Kept locally to re-encode.
+src/assets/travels/**/*.jpg
+src/assets/somethings-web/sw-hero-base.png
+src/assets/somethings/somethings-bg-*.png
+src/assets/allara/allara-bg.png
+src/assets/titan/titan-texture.png
