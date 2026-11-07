@@ -2162,8 +2162,8 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * Clear over the hero. Once the first work card reaches the bar, a solid page-colored
-   * background fades in, with a hairline along its bottom edge.
+   * Clear over the hero. Once content reaches the bar, a solid page-colored background fades
+   * in, with a clean bottom edge.
    */
   .site-nav::before {
     content: '';
@@ -2171,7 +2171,6 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     z-index: -1;
     inset: -4px 0 0; /* reaches 4px above the bar, so no sliver of page can show at the screen's edge */
     background: var(--surface-z0);
-    box-shadow: inset 0 -1px 0 var(--topbar-hairline);
     opacity: 0;
     pointer-events: none;
     transition: opacity 200ms ease;
@@ -2440,16 +2439,17 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * On a phone, from Figma's 393px Contact frame: 64px above, 32px below, and the CTA's two lines
-   * 8px apart, which centers them in its 120px with 32px above and below. The 80px between the
-   * CTA and the footer row is the .contact gap above.
+   * On a phone, from Figma's Contact (Mobile=Yes): 128px above the CTA, which is just its two
+   * lines 8px apart, 128px between it and the footer row, and 32px below.
    */
   @media (max-width: 599px) {
     .contact {
-      padding-block: var(--space-8) var(--space-4);
+      padding-block: calc(2 * var(--space-8)) var(--space-4);
+      gap: calc(2 * var(--space-8));
     }
 
     .contact-cta {
+      min-height: 0;
       gap: var(--space-1);
     }
   }
