@@ -14,6 +14,7 @@
   /* ---------- color: light (Figma) ---------- */
   --text-primary: #101010;
   --text-secondary: #9f9f9f;
+  --text-nav-mobile: #737373; /* inactive top bar links: 4.7:1 on white, over the hero and frosted bar */
   --text-tertiary: #cfcfcf;
   --surface-z0: #ffffff;
   --surface-background: #f3f2f0;
@@ -185,6 +186,7 @@
   :root:not([data-theme='light']) {
     --text-primary: #f2f2f2;
     --text-secondary: #8a8a8a;
+    --text-nav-mobile: var(--text-secondary);
     --text-tertiary: #4a4a4a;
     --surface-z0: #101010;
     --topbar-frost-opacity: 75%;
@@ -216,6 +218,7 @@
 :root[data-theme='dark'] {
   --text-primary: #f2f2f2;
   --text-secondary: #8a8a8a;
+  --text-nav-mobile: var(--text-secondary);
   --text-tertiary: #4a4a4a;
   --surface-z0: #101010;
   --topbar-frost-opacity: 75%;

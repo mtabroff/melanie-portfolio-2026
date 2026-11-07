@@ -2169,13 +2169,15 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .nav-list a {
     position: relative;
     padding-block: 0;
+    font-size: 14px; /* a step up from the 12px label, for thumbs */
+    color: var(--text-nav-mobile);
   }
 
-  /* Larger tap area without changing the spacing from Figma. */
+  /* A 44px tall tap area, centered on the link, without changing the spacing from Figma. */
   .nav-list a::after {
     content: '';
     position: absolute;
-    inset: -12px calc(-1 * var(--space-1));
+    inset: calc(50% - 22px) calc(-1 * var(--space-1));
   }
 
   .site-footer {
