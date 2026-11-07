@@ -2333,6 +2333,42 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     padding-block: var(--space-6);
   }
 
+  /*
+   * On a phone, bigger stacks, from Figma's 393px frame: 285 x 374 in a 353px column (81%), 64px
+   * apart, zigzagging 8.5% and 20.4% in from the left. Everything in a stack is drawn in polaroid
+   * units, so it all scales together; the shadows, border and caption follow here. The deck's
+   * ghost, the copy of the front polaroid that morphs on open and close, gets the same unit.
+   */
+  @media (max-width: 599px) {
+    .places-list,
+    .deck-ghost {
+      --polaroid-unit: calc((100vw - 2 * var(--gutter)) * 1.06273 / 353);
+    }
+
+    .places-list {
+      gap: var(--space-8);
+    }
+
+    .place-row {
+      padding-left: 8.5%;
+    }
+
+    .place-row:nth-child(even) {
+      padding-left: 20.4%; /* runs about 1% past the column's right edge, as in Figma */
+    }
+
+    :is(.places-list, .deck-ghost) .polaroid {
+      border-width: calc(0.37 * var(--polaroid-unit));
+      box-shadow:
+        calc(4.729 * var(--polaroid-unit)) calc(4.729 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04),
+        calc(0.473 * var(--polaroid-unit)) calc(0.473 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) calc(1.892 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04);
+    }
+
+    :is(.places-list, .deck-ghost) .polaroid-caption {
+      font-size: calc(14 * var(--polaroid-unit));
+    }
+  }
+
   .contact {
     min-height: 0;
     padding-block: 0 var(--space-4);
