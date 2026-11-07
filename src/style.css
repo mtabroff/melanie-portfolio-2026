@@ -2200,7 +2200,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .nav-list a {
     position: relative;
     padding-block: 0;
-    font-size: 14px; /* a step up from the 12px label, for thumbs */
+    font: var(--type-label-mobile);
     color: var(--text-nav-mobile);
   }
 
@@ -2215,7 +2215,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font: var(--type-label);
+    font: var(--type-label-mobile);
     letter-spacing: var(--tracking-label);
     color: var(--text-secondary);
   }
@@ -2223,6 +2223,32 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .site-footer .side-links {
     flex-direction: row;
     gap: var(--space-2);
+  }
+
+  .site-footer .side-links a {
+    color: var(--text-secondary);
+  }
+
+  /* 8px beside 12px text on desktop, so the same proportion beside 14px. */
+  .site-footer .side-links .arrow {
+    width: calc(var(--space-1) * 14 / 12);
+    height: calc(var(--space-1) * 14 / 12);
+  }
+
+  /* A 24px icon here, still with a 44px tap area centered on it. */
+  .site-footer .theme-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .site-footer .theme-toggle img {
+    width: 24px;
+    height: 24px;
+    vertical-align: top;
+  }
+
+  .site-footer .theme-toggle::after {
+    inset: calc(50% - 22px);
   }
 
   .section {
@@ -2409,13 +2435,13 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * On a phone, from Figma's 393px Contact frame: 48px above, 32px below, and the CTA's two lines
+   * On a phone, from Figma's 393px Contact frame: 64px above, 32px below, and the CTA's two lines
    * 8px apart, which centers them in its 120px with 32px above and below. The 80px between the
    * CTA and the footer row is the .contact gap above.
    */
   @media (max-width: 599px) {
     .contact {
-      padding-block: var(--space-6) var(--space-4);
+      padding-block: var(--space-8) var(--space-4);
     }
 
     .contact-cta {
