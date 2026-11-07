@@ -183,6 +183,8 @@
     /* One polaroid size for the hero and the travels stacks, from Figma's PolaroidFrame: the
        240-unit card is 255 x 340 on a 393px screen, and scales with the screen's width. */
     --polaroid-unit-phone: calc(100vw * 255 / 240 / 393);
+
+    --type-body-large: 400 18px/1.5 var(--font-sans);
   }
 }
 

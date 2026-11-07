@@ -2409,6 +2409,21 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
+   * On a phone, from Figma's 393px Contact frame: 48px above, 32px below, and the CTA's two lines
+   * 8px apart, which centers them in its 120px with 32px above and below. The 80px between the
+   * CTA and the footer row is the .contact gap above.
+   */
+  @media (max-width: 599px) {
+    .contact {
+      padding-block: var(--space-6) var(--space-4);
+    }
+
+    .contact-cta {
+      gap: var(--space-1);
+    }
+  }
+
+  /*
    * An open description is solid card color. Once it has faded in, the card under it hides too,
    * so nothing shows around its rounded edges. Closing shows the card again right away.
    */
