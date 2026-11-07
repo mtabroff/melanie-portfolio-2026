@@ -572,17 +572,17 @@ h3 {
 
 .phone,
 .browser {
-  font-size: calc(var(--card-height, 100cqh) / 552 * var(--scale, 1));
+  font-size: calc(100cqh / 552 * var(--scale, 1));
 }
 
 /* ----- PhoneShowcase: 427.804 x 885 in Figma, sized with --scale ----- */
 
 .phone {
   --bezel-radius: 69.232em;
-  top: calc(var(--top, 0) * var(--card-height, 100cqh) / 552);
+  top: calc(var(--top, 0) * 100cqh / 552);
   width: 427.804em;
   height: 885em;
-  transform: translateX(calc(-50% + var(--offset-x) * var(--card-height, 100cqh) / 552)) rotate(var(--rotate, 0deg));
+  transform: translateX(calc(-50% + var(--offset-x) * 100cqh / 552)) rotate(var(--rotate, 0deg));
 }
 
 .phone::before {
@@ -1175,13 +1175,13 @@ h3 {
 /* ----- DesktopShowcase: based on the 536px wide version in Figma, sized with --scale ----- */
 
 .browser {
-  top: calc(var(--top, 0) * var(--card-height, 100cqh) / 552);
+  top: calc(var(--top, 0) * 100cqh / 552);
   width: 536em;
   height: 351.75em;
   overflow: hidden;
   border-radius: 10.05em;
   box-shadow: 0 1.792em 62.732em rgba(0, 0, 0, 0.08);
-  transform: translateX(calc(-50% + var(--offset-x) * var(--card-height, 100cqh) / 552));
+  transform: translateX(calc(-50% + var(--offset-x) * 100cqh / 552));
 }
 
 .browser-screen {
@@ -1410,7 +1410,7 @@ h3 {
   --scale: 1.10606; /* 107.4% of the card wide */
   --offset-x: 0;
   --top: 70.1; /* 12.7% down */
-  left: calc(-31.2% + 296.43 * var(--card-height, 100cqh) / 552); /* its left edge at -31.2% of the card's width */
+  left: calc(-31.2% + 296.43 * 100cqh / 552); /* its left edge at -31.2% of the card's width */
 }
 
 .swap-card-showcase[data-layout='multi-tilted'] .phone {
@@ -2232,27 +2232,84 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * On a phone, taller cards, so about one and a half show at a time. Everything inside is
-   * sized from the card's height and centered across it, so the composition scales up whole
-   * and the card's sides crop it, rather than anything stretching. Never shorter than Figma's.
+   * On a phone, taller cards, from the mobile mockup in Figma: 353 x 432, so about one and a
+   * half show at a time. Each phone or browser frame is placed by its center and sized as a
+   * whole, in % of the card's width (cqw), so everything animating inside it stays aligned.
+   * Frames bleed off the card's edges where the mockup has them do so.
    */
   @media (max-width: 599px) {
     .work-card {
-      aspect-ratio: auto;
-      height: max(65svh, (100vw - 2 * var(--gutter)) * 336.218 / 353);
+      aspect-ratio: 353 / 432;
     }
 
-    /*
-     * Only a single phone scales up well. Every other layout (side-by-side phones, a browser,
-     * a browser with phones) would lose too much to the crop, so these keep the size they have
-     * at Figma's proportions, centered in the taller card.
-     */
-    .work-card:not([data-layout='phone-single']) {
-      --card-height: calc(100cqw * 336.218 / 353);
+    .work-card > :is(.phone, .browser) {
+      transform: translate(-50%, -50%) rotate(var(--rotate, 0deg));
     }
 
-    .work-card:not([data-layout='phone-single']) > * {
-      translate: 0 calc((100cqh - var(--card-height)) / 2);
+    [data-layout='phone-pair'] .phone:nth-child(1) {
+      font-size: 0.103205cqw; /* 44.2% of the card wide */
+      left: 27.74cqw;
+      top: 64.93cqw;
+    }
+    [data-layout='phone-pair'] .phone:nth-child(2) {
+      font-size: 0.103205cqw; /* 44.2% of the card wide */
+      left: 72.14cqw;
+      top: 64.93cqw;
+    }
+    [data-layout='desktop-single'] .browser {
+      font-size: 0.309164cqw; /* 165.7% of the card wide */
+      left: 95.60cqw;
+      top: 73.07cqw;
+    }
+    .swap-card-showcase[data-layout='multi-tilted'] .browser {
+      font-size: 0.208969cqw; /* 112.0% of the card wide */
+      left: 42.12cqw;
+      top: 56.02cqw;
+    }
+    .swap-card-showcase[data-layout='multi-tilted'] .phone { /* the mockup's size and center, at the site's own tilt */
+      font-size: 0.111641cqw; /* 47.8% of the card wide */
+      left: 103.62cqw;
+      top: 78.31cqw;
+    }
+    [data-layout='phone-pair-tilted'] .phone:nth-child(1) {
+      font-size: 0.121442cqw; /* 52.0% of the card wide */
+      left: 44.42cqw;
+      top: 64.45cqw;
+    }
+    [data-layout='phone-pair-tilted'] .phone:nth-child(2) {
+      font-size: 0.121442cqw; /* 52.0% of the card wide */
+      left: 100.27cqw;
+      top: 64.45cqw;
+    }
+    [data-layout='phone-single'] .phone {
+      font-size: 0.226309cqw; /* 96.8% of the card wide */
+      left: 50.11cqw;
+      top: 122.24cqw;
+    }
+    [data-layout='phone-trio'] .phone:nth-child(1) {
+      font-size: 0.102752cqw; /* 44.0% of the card wide */
+      left: 4.70cqw;
+      top: 65.01cqw;
+    }
+    [data-layout='phone-trio'] .phone:nth-child(2) {
+      font-size: 0.102752cqw; /* 44.0% of the card wide */
+      left: 50.20cqw;
+      top: 65.01cqw;
+    }
+    [data-layout='phone-trio'] .phone:nth-child(3) {
+      font-size: 0.102752cqw; /* 44.0% of the card wide */
+      left: 95.69cqw;
+      top: 65.01cqw;
+    }
+    .allara-card[data-layout='multi'] .browser {
+      font-size: 0.208969cqw; /* 112.0% of the card wide */
+      left: 42.12cqw;
+      top: 56.02cqw;
+    }
+    .allara-card[data-layout='multi'] .phone { /* over the browser's side panel, as on desktop, scaled with it */
+      font-size: 0.078587cqw; /* 33.6% of the card wide */
+      left: 78.78cqw;
+      top: 77.00cqw;
     }
   }
 
