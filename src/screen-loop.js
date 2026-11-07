@@ -27,6 +27,20 @@ export function pauseRunning(animations) {
   return () => running.forEach((animation) => animation.play())
 }
 
+// Resolves once the image has loaded and decoded, and rejects if it fails to load. decode() on
+// its own isn't enough: WebKit rejects it straight away for a lazy image that hasn't started
+// loading, where Chromium waits.
+function loadAndDecode(image) {
+  const loaded =
+    image.complete && image.naturalWidth
+      ? Promise.resolve()
+      : new Promise((resolve, reject) => {
+          image.addEventListener('load', resolve, { once: true })
+          image.addEventListener('error', reject, { once: true })
+        })
+  return loaded.then(() => image.decode())
+}
+
 // `startAt` begins the loop partway in, for a loop whose first moments aren't its resting state.
 export function loopWhileVisible(root, cycle, tracks, startAt = 0) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -56,13 +70,16 @@ export function loopWhileVisible(root, cycle, tracks, startAt = 0) {
 
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting
+    // Lazy images that the card's edge clips, like a side phone on mobile, never count as in
+    // view, so they'd never load and the loop would never start. Load them all once it's here.
+    if (visible) images.forEach((image) => (image.loading = 'eager'))
     update()
   }).observe(root)
 
   reducedMotion.addEventListener('change', update)
   onHoldChange(root, update)
 
-  Promise.all(images.map((image) => image.decode())).then(
+  Promise.all(images.map(loadAndDecode)).then(
     () => {
       ready = true
       update()
