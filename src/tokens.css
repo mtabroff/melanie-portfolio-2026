@@ -106,6 +106,7 @@
   --column: 600px;         /* centered content column, including its gutter */
   --gutter: var(--space-3);
   --topbar-height: var(--space-6);
+  --topbar-frost-opacity: 80%; /* the frosted top bar's page color, under its blur */
   --radius-card: 32px;
   --height-card: 552px;
   --hero-peek: 17px;       /* how much of the first card shows on the first screen */
@@ -186,6 +187,7 @@
     --text-secondary: #8a8a8a;
     --text-tertiary: #4a4a4a;
     --surface-z0: #101010;
+    --topbar-frost-opacity: 75%;
     --surface-background: #1a1a1a;
     --surface-background-subtle: #101010;
     --surface-divider: #2e2e2e;
@@ -216,6 +218,7 @@
   --text-secondary: #8a8a8a;
   --text-tertiary: #4a4a4a;
   --surface-z0: #101010;
+  --topbar-frost-opacity: 75%;
   --surface-background: #1a1a1a;
   --surface-background-subtle: #101010;
   --surface-divider: #2e2e2e;

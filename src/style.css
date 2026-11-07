@@ -2117,32 +2117,27 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * Clear over the hero. Once the first work card reaches the bar, its background fades in:
-   * the page color, solid to just below the links, then a short fade to clear. The
-   * in-between stops ease the fade so it doesn't band.
+   * Clear over the hero. Once the first work card reaches the bar, a frosted background fades
+   * in: the page color, mostly opaque, over a blurred and saturated view of what's under it.
    */
   .site-nav::before {
-    --solid: calc(var(--topbar-height) - var(--space-1)); /* 8px below the links */
-    --fade: 22px;
     content: '';
     position: absolute;
     z-index: -1;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: calc(var(--solid) + var(--fade));
-    background: linear-gradient(
-      to bottom,
-      var(--surface-z0) var(--solid),
-      color-mix(in srgb, var(--surface-z0) 90%, transparent) calc(var(--solid) + var(--fade) * 0.18),
-      color-mix(in srgb, var(--surface-z0) 66%, transparent) calc(var(--solid) + var(--fade) * 0.38),
-      color-mix(in srgb, var(--surface-z0) 34%, transparent) calc(var(--solid) + var(--fade) * 0.6),
-      color-mix(in srgb, var(--surface-z0) 10%, transparent) calc(var(--solid) + var(--fade) * 0.8),
-      transparent 100%
-    );
+    inset: 0;
+    background: color-mix(in srgb, var(--surface-z0) var(--topbar-frost-opacity), transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    backdrop-filter: saturate(180%) blur(16px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 200ms ease;
+  }
+
+  /* Without the blur, a nearly solid bar keeps the links readable. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .site-nav::before {
+      background: color-mix(in srgb, var(--surface-z0) 95%, transparent);
+    }
   }
 
   .site-nav.is-over-content::before {
