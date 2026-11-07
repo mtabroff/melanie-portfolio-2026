@@ -141,6 +141,50 @@ window.addEventListener('resize', () => {
 })
 update()
 
+// Nav links on a touch screen: a quick eased scroll to the section. With a mouse or trackpad
+// the CSS's scroll-behavior: smooth already does this, and with reduced motion the link just
+// jumps. Each section's scroll-margin-top keeps it clear of the top bar. A touch or wheel
+// during the scroll stops it, so it never fights a finger.
+const finePointer = window.matchMedia('(pointer: fine)')
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+const NAV_SCROLL_MS = 450
+let navScroll = null
+
+function stopNavScroll() {
+  if (navScroll) cancelAnimationFrame(navScroll)
+  navScroll = null
+}
+
+function scrollToSection(section) {
+  stopNavScroll()
+  const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0
+  const maxY = document.documentElement.scrollHeight - window.innerHeight
+  const to = Math.min(Math.max(section.getBoundingClientRect().top + window.scrollY - margin, 0), maxY)
+  const from = window.scrollY
+  const start = performance.now()
+  const step = (now) => {
+    const t = Math.min((now - start) / NAV_SCROLL_MS, 1)
+    const eased = 1 - (1 - t) ** 3 // ease-out
+    window.scrollTo(0, from + (to - from) * eased)
+    navScroll = t < 1 ? requestAnimationFrame(step) : null
+  }
+  navScroll = requestAnimationFrame(step)
+}
+
+for (const link of navLinks.values()) {
+  link.addEventListener('click', (event) => {
+    if (finePointer.matches || reducedMotion.matches) return
+    const section = document.getElementById(link.hash.slice(1))
+    if (!section) return
+    event.preventDefault()
+    history.pushState(null, '', link.hash)
+    scrollToSection(section)
+  })
+}
+
+window.addEventListener('touchstart', stopNavScroll, { passive: true })
+window.addEventListener('wheel', stopNavScroll, { passive: true })
+
 // Hero polaroid flip. A screen reader hears the handwritten note through the status line.
 const heroFlipStatus = document.getElementById('hero-flip-status')
 const heroNote = heroPolaroid.querySelector('.hero-polaroid-back').textContent
