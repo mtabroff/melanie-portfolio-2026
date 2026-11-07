@@ -2112,8 +2112,22 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     flex-direction: row;
     align-items: flex-start;
     justify-content: flex-end;
-    background: var(--surface-topbar-fade);
-    pointer-events: none; /* the fade shouldn't block taps on the content under it */
+    pointer-events: none; /* the bar shouldn't block taps on the content under it */
+  }
+
+  /* Clear over the hero. The page color fades in once the first work card reaches the bar. */
+  .site-nav::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: var(--surface-page);
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  .site-nav.is-over-content::before {
+    opacity: 1;
   }
 
   .site-nav .theme-toggle,
@@ -2224,7 +2238,8 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .deck-card,
   .deck-face,
   .nav-name,
-  .site-nav.is-past-hero .nav-name {
+  .site-nav.is-past-hero .nav-name,
+  .site-nav::before {
     transition: none;
   }
 

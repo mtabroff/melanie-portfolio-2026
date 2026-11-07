@@ -27,6 +27,7 @@ const panelLayout = window.matchMedia('(min-width: 1200px)')
 const projects = [...document.querySelectorAll('.project')]
 const siteNav = document.querySelector('.site-nav')
 const hero = document.querySelector('.hero')
+const firstCard = document.querySelector('.work-card')
 
 // A card's text is fully shown until its center is this far (px) from the viewport center,
 // then fades out by PANEL_FADE_END. Cards are 568px apart, so the fades just overlap
@@ -53,6 +54,8 @@ function measure() {
   const top = (element) => element.getBoundingClientRect().top + window.scrollY
   layout = {
     heroBottom: hero.getBoundingClientRect().bottom + window.scrollY,
+    cardTop: top(firstCard),
+    navHeight: siteNav.offsetHeight,
     sectionTops: sections.map(top),
     projectCenters: projects.map((project) => top(project) + project.offsetHeight / 2),
     pageHeight: document.documentElement.scrollHeight,
@@ -90,6 +93,8 @@ function update() {
   if (!layout) measure()
   const { scrollY, innerHeight } = window
   siteNav.classList.toggle('is-past-hero', layout.heroBottom <= scrollY)
+  // The mobile top bar is clear over the hero and fills in once the first card reaches it.
+  siteNav.classList.toggle('is-over-content', layout.cardTop < scrollY + layout.navHeight)
   updateSections(scrollY, innerHeight)
   updatePanel(scrollY, innerHeight)
 }
