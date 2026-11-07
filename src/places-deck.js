@@ -414,7 +414,7 @@ export function initPlacesDeck() {
     syncVideos()
     root.classList.add('deck-open')
     delete root.dataset.place
-    document.title = `${name} · melanie joy tabroff`
+    document.title = `${name} · melanie tabroff`
     history.scrollRestoration = 'manual'
     link.style.visibility = 'hidden'
 
