@@ -2264,6 +2264,21 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     padding-block: var(--space-6);
   }
 
+  /*
+   * On a phone the hero fills the first screen below the top bar, less 24px, so just the top
+   * edge of the first work card shows at the bottom. svh, so the toolbar can't resize it. The
+   * polaroid and intro are centered in it as one group (.hero is a centered flex column), by
+   * what shows: the polaroid's footprint has empty space above the card, so the bottom padding
+   * lifts the group by that much.
+   */
+  @media (max-width: 599px) {
+    .hero {
+      --card-peek: 24px;
+      min-height: calc(100svh - var(--topbar-height) - var(--card-peek));
+      padding-block: 0 calc(23.5 * var(--polaroid-unit-phone) + 6px);
+    }
+  }
+
   /* Starts under the top bar, which takes up its own space above the hero here. */
   .hero-bg {
     top: calc(-1 * var(--topbar-height));
