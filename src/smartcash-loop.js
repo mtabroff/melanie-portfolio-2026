@@ -1,9 +1,10 @@
 // The Titan Smart Cash card. On the left phone the rate scanner turns its ring and rolls the
 // rate's digits to each fund it checks, then back to 4.51, forever. On the middle phone the
 // chart's bars grow up from the baseline each time the card comes back into view, once it has
-// fully left. With reduced motion, both stay at their final states.
+// fully left. Both hold still while the card's description is open on mobile, and carry on
+// from there when it closes. With reduced motion, both stay at their final states.
 
-import { loopWhileVisible } from './screen-loop.js'
+import { isHeld, loopWhileVisible, onHoldChange, pauseRunning } from './screen-loop.js'
 
 // The scanner: each step holds, then turns to the next fund.
 const HOLD = 1500
@@ -61,6 +62,8 @@ function growWhenVisible(card) {
   const ready = Promise.all([...chart.querySelectorAll('img')].map((image) => image.decode())).catch(() => {})
   let animations = []
   let armed = false
+  let inView = false
+  let resume = null // set while held, to pick up the bars that were growing
 
   // Waiting at the start, so the bars show at nothing until they play.
   function reset() {
@@ -76,20 +79,41 @@ function growWhenVisible(card) {
       return animation
     })
     armed = true
+    resume = null
+  }
+
+  function growIfShown() {
+    if (!armed || !inView || isHeld(card)) return
+    armed = false
+    const growing = animations
+    ready.then(() => {
+      if (growing !== animations) return // it left and reset before the images were ready
+      if (isHeld(card)) resume = () => growing.forEach((animation) => animation.play())
+      else growing.forEach((animation) => animation.play())
+    })
   }
 
   reset()
   new IntersectionObserver(
     ([entry]) => {
+      inView = entry.intersectionRatio >= CHART_IN_VIEW
       if (reducedMotion.matches) return
       if (!entry.isIntersecting) reset()
-      else if (armed && entry.intersectionRatio >= CHART_IN_VIEW) {
-        armed = false
-        ready.then(() => animations.forEach((animation) => animation.play()))
-      }
+      else growIfShown()
     },
     { threshold: [0, CHART_IN_VIEW] },
   ).observe(card)
+
+  onHoldChange(card, () => {
+    if (isHeld(card)) {
+      if (!armed && !resume) resume = pauseRunning(animations)
+    } else if (resume) {
+      resume()
+      resume = null
+    } else {
+      growIfShown()
+    }
+  })
 
   // Turning reduced motion on midway shows the bars in full.
   reducedMotion.addEventListener('change', () => {

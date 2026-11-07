@@ -111,7 +111,11 @@ function remeasure() {
 }
 
 window.addEventListener('scroll', requestUpdate, { passive: true })
-desktop.addEventListener('change', remeasure)
+desktop.addEventListener('change', () => {
+  remeasure()
+  // An open description holds its card only on mobile, so crossing the breakpoint changes that.
+  for (const project of projects) project.dispatchEvent(new Event('revealchange'))
+})
 // Covers resizes, fonts and images settling in, and the hero growing when the polaroid flips.
 new ResizeObserver(remeasure).observe(document.body)
 window.addEventListener('resize', remeasure)
@@ -131,6 +135,7 @@ heroPolaroid.addEventListener('click', () => {
 // Work card reveal, for screens without the side panel. Only one is open at a time.
 function setRevealed(project, revealed) {
   project.classList.toggle('is-revealed', revealed)
+  project.dispatchEvent(new Event('revealchange')) // pauses or resumes the card, on mobile
   const toggle = project.querySelector('.info-toggle')
   toggle.setAttribute('aria-expanded', String(revealed))
   toggle.setAttribute('aria-label', revealed ? 'hide project details' : 'show project details')
