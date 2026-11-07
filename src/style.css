@@ -2123,27 +2123,19 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * Clear over the hero. Once the first work card reaches the bar, a frosted background fades
-   * in: the page color, mostly opaque, over a blurred and saturated view of what's under it.
+   * Clear over the hero. Once the first work card reaches the bar, a solid page-colored
+   * background fades in, with a hairline along its bottom edge.
    */
   .site-nav::before {
     content: '';
     position: absolute;
     z-index: -1;
     inset: 0;
-    background: color-mix(in srgb, var(--surface-z0) var(--topbar-frost-opacity), transparent);
-    -webkit-backdrop-filter: saturate(180%) blur(16px);
-    backdrop-filter: saturate(180%) blur(16px);
+    background: var(--surface-z0);
+    box-shadow: inset 0 -1px 0 var(--topbar-hairline);
     opacity: 0;
     pointer-events: none;
     transition: opacity 200ms ease;
-  }
-
-  /* Without the blur, a nearly solid bar keeps the links readable. */
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .site-nav::before {
-      background: color-mix(in srgb, var(--surface-z0) 95%, transparent);
-    }
   }
 
   .site-nav.is-over-content::before {
@@ -2386,13 +2378,6 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 }
 
 /* ---------- temporary debug switches, set from the URL (see src/debug.js) ---------- */
-
-/* ?noblur: the top bar keeps its color, without the frosted backdrop. */
-.debug-noblur .site-nav::before {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: color-mix(in srgb, var(--surface-z0) 95%, transparent);
-}
 
 /* ?noshadow: no shadows on the polaroids, the cards, or anything inside them. */
 .debug-noshadow :is(.polaroid, .polaroid *, .hero-polaroid, .hero-polaroid *, .work-card, .work-card *) {

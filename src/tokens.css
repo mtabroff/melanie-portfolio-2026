@@ -14,7 +14,7 @@
   /* ---------- color: light (Figma) ---------- */
   --text-primary: #101010;
   --text-secondary: #9f9f9f;
-  --text-nav-mobile: #737373; /* inactive top bar links: 4.7:1 on white, over the hero and frosted bar */
+  --text-nav-mobile: #737373; /* inactive top bar links: 4.7:1 on white */
   --text-tertiary: #cfcfcf;
   --surface-z0: #ffffff;
   --surface-background: #f3f2f0;
@@ -107,7 +107,7 @@
   --column: 600px;         /* centered content column, including its gutter */
   --gutter: var(--space-3);
   --topbar-height: var(--space-6);
-  --topbar-frost-opacity: 80%; /* the frosted top bar's page color, under its blur */
+  --topbar-hairline: rgba(0, 0, 0, 0.06); /* along the bottom of the mobile top bar */
   --radius-card: 32px;
   --height-card: 552px;
   --hero-peek: 17px;       /* how much of the first card shows on the first screen */
@@ -189,7 +189,7 @@
     --text-nav-mobile: var(--text-secondary);
     --text-tertiary: #4a4a4a;
     --surface-z0: #101010;
-    --topbar-frost-opacity: 75%;
+    --topbar-hairline: rgba(255, 255, 255, 0.08);
     --surface-background: #1a1a1a;
     --surface-background-subtle: #101010;
     --surface-divider: #2e2e2e;
@@ -221,7 +221,7 @@
   --text-nav-mobile: var(--text-secondary);
   --text-tertiary: #4a4a4a;
   --surface-z0: #101010;
-  --topbar-frost-opacity: 75%;
+  --topbar-hairline: rgba(255, 255, 255, 0.08);
   --surface-background: #1a1a1a;
   --surface-background-subtle: #101010;
   --surface-divider: #2e2e2e;
