@@ -12,8 +12,14 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+/*
+ * Smooth jumps to a section, with a mouse or trackpad only. On a phone the page is left to
+ * scroll entirely natively, so nothing animates the scroll position under a flick.
+ */
+@media (pointer: fine) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 html,
