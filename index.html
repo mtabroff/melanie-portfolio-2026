@@ -24,7 +24,7 @@
       if (place) document.documentElement.dataset.place = place[1]
       // Temporary debug switches (see src/debug.js): each one turns a feature off, e.g. /?novideo&noanim.
       var params = new URLSearchParams(location.search)
-      var flags = ['novideo', 'noanim', 'noshadow', 'notexture', 'lowres']
+      var flags = ['nobg', 'novideo', 'noanim', 'noshadow', 'notexture', 'lowres']
       for (var i = 0; i < flags.length; i++) {
         if (params.has(flags[i])) document.documentElement.classList.add('debug-' + flags[i])
       }

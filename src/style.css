@@ -2415,6 +2415,16 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
 /* ---------- temporary debug switches, set from the URL (see src/debug.js) ---------- */
 
+/* ?nobg: the hero and contact backgrounds go flat, without the zoomed photo or its fades. */
+.debug-nobg :is(.hero-bg, .contact-bg) {
+  background: var(--surface-page);
+}
+
+.debug-nobg :is(.hero-bg, .contact-bg)::before,
+.debug-nobg :is(.hero-bg, .contact-bg)::after {
+  display: none;
+}
+
 /* ?noshadow: no shadows on the polaroids, the cards, or anything inside them. */
 .debug-noshadow :is(.polaroid, .polaroid *, .hero-polaroid, .hero-polaroid *, .work-card, .work-card *) {
   box-shadow: none !important;
