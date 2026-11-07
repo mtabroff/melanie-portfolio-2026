@@ -486,6 +486,29 @@ h3 {
   transform: rotateY(180deg);
 }
 
+/* On a phone, the same size as the travels stacks' front polaroids, with everything on it scaled to match. */
+@media (max-width: 599px) {
+  .hero-polaroid {
+    --polaroid-unit: var(--polaroid-unit-phone);
+  }
+
+  .hero-polaroid-face {
+    border-width: calc(0.37 * var(--polaroid-unit));
+    box-shadow:
+      calc(4.729 * var(--polaroid-unit)) calc(4.729 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04),
+      calc(0.473 * var(--polaroid-unit)) calc(0.473 * var(--polaroid-unit)) calc(9.459 * var(--polaroid-unit)) calc(1.892 * var(--polaroid-unit)) rgba(0, 0, 0, 0.04);
+  }
+
+  .hero-polaroid-caption,
+  .hero-polaroid-back {
+    font-size: calc(14 * var(--polaroid-unit));
+  }
+
+  .hero-polaroid-back {
+    padding: calc(24 * var(--polaroid-unit));
+  }
+}
+
 @media (hover: hover) {
   .hero-polaroid:hover .hero-polaroid-tilt {
     transform: rotate(var(--hero-tilt));
@@ -2334,15 +2357,16 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * On a phone, bigger stacks, from Figma's 393px frame: 285 x 374 in a 353px column (81%), 64px
-   * apart, zigzagging 8.5% and 20.4% in from the left. Everything in a stack is drawn in polaroid
-   * units, so it all scales together; the shadows, border and caption follow here. The deck's
-   * ghost, the copy of the front polaroid that morphs on open and close, gets the same unit.
+   * On a phone, bigger stacks, the same size as the hero polaroid (--polaroid-unit-phone): a
+   * 255 x 340 front card on a 393px screen, 64px apart, zigzagging 8.5% and 20.4% in from the
+   * left. Everything in a stack is drawn in polaroid units, so it all scales together; the
+   * shadows, border and caption follow here. The deck's ghost, the copy of the front polaroid
+   * that morphs on open and close, gets the same unit.
    */
   @media (max-width: 599px) {
     .places-list,
     .deck-ghost {
-      --polaroid-unit: calc((100vw - 2 * var(--gutter)) * 1.06273 / 353);
+      --polaroid-unit: var(--polaroid-unit-phone);
     }
 
     .places-list {

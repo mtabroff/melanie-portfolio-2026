@@ -177,6 +177,15 @@
   }
 }
 
+/* Phone values, under 600px. */
+@media (max-width: 599px) {
+  :root {
+    /* One polaroid size for the hero and the travels stacks, from Figma's PolaroidFrame: the
+       240-unit card is 255 x 340 on a 393px screen, and scales with the screen's width. */
+    --polaroid-unit-phone: calc(100vw * 255 / 240 / 393);
+  }
+}
+
 /*
  * Dark palette, repeated because CSS can't share a block between a media query and
  * a selector. The first follows the system setting if the script in index.html
