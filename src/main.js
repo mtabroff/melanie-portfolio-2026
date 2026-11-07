@@ -45,39 +45,53 @@ function setActiveSection(id) {
   }
 }
 
-function updateSections() {
-  // The active section is the one crossing this line. It sits higher on mobile, where
-  // the hero is short enough that the next section starts near the middle of the screen.
-  const line = window.innerHeight * (desktop.matches ? 1 / 2 : 1 / 3)
-  let current = sections[0]
-  for (const section of sections) {
-    if (section.getBoundingClientRect().top <= line) current = section
+// Where things sit on the page, measured only when the layout changes. Scrolling then reads
+// nothing but scrollY, so it never forces a layout while the card animations are running.
+let layout = null
+
+function measure() {
+  const top = (element) => element.getBoundingClientRect().top + window.scrollY
+  layout = {
+    heroBottom: hero.getBoundingClientRect().bottom + window.scrollY,
+    sectionTops: sections.map(top),
+    projectCenters: projects.map((project) => top(project) + project.offsetHeight / 2),
+    pageHeight: document.documentElement.scrollHeight,
   }
-  // On a tall screen the footer can't scroll up to the line, so the end of the page counts too.
-  const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
-  if (atEnd) current = sections[sections.length - 1]
-  setActiveSection(current.id)
 }
 
-function updatePanel() {
+function updateSections(scrollY, viewportHeight) {
+  // The active section is the one crossing this line. It sits higher on mobile, where
+  // the hero is short enough that the next section starts near the middle of the screen.
+  const line = scrollY + viewportHeight * (desktop.matches ? 1 / 2 : 1 / 3)
+  let current = 0
+  layout.sectionTops.forEach((top, index) => {
+    if (top <= line) current = index
+  })
+  // On a tall screen the footer can't scroll up to the line, so the end of the page counts too.
+  if (scrollY + viewportHeight >= layout.pageHeight - 1) current = sections.length - 1
+  setActiveSection(sections[current].id)
+}
+
+function updatePanel(scrollY, viewportHeight) {
   if (!panelLayout.matches) return
-  const viewportCenter = window.innerHeight / 2
-  for (const project of projects) {
-    const rect = project.getBoundingClientRect()
-    const distance = Math.abs(rect.top + rect.height / 2 - viewportCenter)
+  const viewportCenter = scrollY + viewportHeight / 2
+  projects.forEach((project, index) => {
+    const distance = Math.abs(layout.projectCenters[index] - viewportCenter)
     const reveal = (PANEL_FADE_END - distance) / (PANEL_FADE_END - PANEL_HOLD)
     project.style.setProperty('--reveal', Math.min(Math.max(reveal, 0), 1))
     project.classList.toggle('is-panel-shown', reveal > 0)
-  }
+  })
 }
 
 let ticking = false
 
 function update() {
   ticking = false
-  siteNav.classList.toggle('is-past-hero', hero.getBoundingClientRect().bottom <= 0)
-  updateSections()
-  updatePanel()
+  if (!layout) measure()
+  const { scrollY, innerHeight } = window
+  siteNav.classList.toggle('is-past-hero', layout.heroBottom <= scrollY)
+  updateSections(scrollY, innerHeight)
+  updatePanel(scrollY, innerHeight)
 }
 
 function requestUpdate() {
@@ -86,9 +100,16 @@ function requestUpdate() {
   requestAnimationFrame(update)
 }
 
+function remeasure() {
+  layout = null
+  requestUpdate()
+}
+
 window.addEventListener('scroll', requestUpdate, { passive: true })
-window.addEventListener('resize', requestUpdate)
-desktop.addEventListener('change', requestUpdate)
+desktop.addEventListener('change', remeasure)
+// Covers resizes, fonts and images settling in, and the hero growing when the polaroid flips.
+new ResizeObserver(remeasure).observe(document.body)
+window.addEventListener('resize', remeasure)
 update()
 
 // Hero polaroid flip. A screen reader hears the handwritten note through the status line.
