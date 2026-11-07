@@ -2228,6 +2228,19 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .contact-reply {
     line-height: 1.5;
   }
+
+  /*
+   * An open description is solid card color. Once it has faded in, the card under it hides too,
+   * so nothing shows around its rounded edges. Closing shows the card again right away.
+   */
+  .project-copy {
+    background: var(--surface-card);
+  }
+
+  .project.is-revealed .work-card {
+    opacity: 0;
+    transition: opacity 0s linear var(--reveal-fade);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
