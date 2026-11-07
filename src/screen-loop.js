@@ -1,5 +1,7 @@
 // Plays a looping screen animation in a work card: once every image in it has decoded, only
 // while it's on screen and not held, and never with reduced motion, where the CSS shows a still instead.
+import { debugOff } from './debug.js'
+
 // `tracks` is a list of [element, keyframes], or [element, keyframes, duration] for a track with
 // its own length. They all share one start time, so they can't drift apart.
 
@@ -35,7 +37,7 @@ export function loopWhileVisible(root, cycle, tracks, startAt = 0) {
   let visible = false
 
   function update() {
-    if (!ready || reducedMotion.matches) {
+    if (!ready || reducedMotion.matches || debugOff('anim')) {
       animations.forEach((animation) => animation.cancel())
       animations = []
       return
@@ -77,7 +79,7 @@ export function playWhileVisible(root, video) {
   let visible = false
 
   function update() {
-    if (visible && !isHeld(root) && !reducedMotion.matches) {
+    if (visible && !isHeld(root) && !reducedMotion.matches && !debugOff('video')) {
       video.play().catch(() => {}) // if the browser refuses, the poster stays
     } else {
       video.pause()

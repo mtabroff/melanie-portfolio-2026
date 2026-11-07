@@ -22,6 +22,24 @@
       // Same idea for a shared place link: the deck opens over the list, which shouldn't flash first.
       var place = location.pathname.match(/^\/travels\/([^/]+)\/?$/)
       if (place) document.documentElement.dataset.place = place[1]
+      // Temporary debug switches (see src/debug.js): each one turns a feature off, e.g. /?novideo&noanim.
+      var params = new URLSearchParams(location.search)
+      var flags = ['noblur', 'novideo', 'noanim', 'noshadow', 'notexture', 'lowres']
+      for (var i = 0; i < flags.length; i++) {
+        if (params.has(flags[i])) document.documentElement.classList.add('debug-' + flags[i])
+      }
+      // lowres: every responsive image asks for its smallest size, rewritten as the parser adds it.
+      if (params.has('lowres')) {
+        new MutationObserver(function (records) {
+          records.forEach(function (record) {
+            record.addedNodes.forEach(function (node) {
+              if (node.nodeType !== 1) return
+              var media = node.matches('img[srcset], source[srcset]') ? [node] : node.querySelectorAll('img[srcset], source[srcset]')
+              media.forEach(function (element) { element.sizes = '1px' })
+            })
+          })
+        }).observe(document.documentElement, { childList: true, subtree: true })
+      }
     })()
   </script>
   <link rel="stylesheet" href="/src/tokens.css" />

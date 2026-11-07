@@ -18,12 +18,13 @@ const SPRING = 'cubic-bezier(0.34, 1.25, 0.64, 1)'
 const FROM = -135 // the light, in the screen's points, off the illustration's left edge
 const TO = 408.4 // and off its right edge
 
+import { debugOff } from './debug.js'
 import { isHeld, onHoldChange, pauseRunning } from './screen-loop.js'
 
 export function initRebrandCard() {
   const card = document.querySelector('.rebrand-card')
   const band = card?.querySelector('.rebrand-shimmer-band')
-  if (!band) return
+  if (!band || debugOff('anim')) return
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const phones = [...card.querySelectorAll('.phone')]
   const images = [...card.querySelectorAll('img')]

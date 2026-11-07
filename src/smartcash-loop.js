@@ -4,6 +4,7 @@
 // fully left. Both hold still while the card's description is open on mobile, and carry on
 // from there when it closes. With reduced motion, both stay at their final states.
 
+import { debugOff } from './debug.js'
 import { isHeld, loopWhileVisible, onHoldChange, pauseRunning } from './screen-loop.js'
 
 // The scanner: each step holds, then turns to the next fund.
@@ -56,7 +57,7 @@ function scannerTracks(card) {
 // enough of it is back. Being only partly scrolled away doesn't count as leaving.
 function growWhenVisible(card) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-  if (reducedMotion.matches) return
+  if (reducedMotion.matches || debugOff('anim')) return
   const bars = [...card.querySelectorAll('.smartcash-bar')]
   const chart = card.querySelector('.smartcash-chart')
   const ready = Promise.all([...chart.querySelectorAll('img')].map((image) => image.decode())).catch(() => {})

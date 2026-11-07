@@ -2,6 +2,8 @@
 // place has its own URL, so back works and a /travels/japan link can be shared.
 // The list stays behind the dialog, so closing returns to the exact spot it was opened from.
 
+import { debugOff } from './debug.js'
+
 // Opening, about 450ms: the front photo becomes the top card, the back polaroids become the
 // paper cards, and the frames and the rest of the page fade. The caption and close come last.
 const MORPH_MS = 450
@@ -146,7 +148,7 @@ export function initPlacesDeck() {
 
   // Only the top card plays. With reduced motion, or if the browser refuses, the poster stays.
   function syncVideos() {
-    const canPlay = dialog.open && !document.hidden && !reducedMotion.matches
+    const canPlay = dialog.open && !document.hidden && !reducedMotion.matches && !debugOff('video')
     for (const video of stage.querySelectorAll('video')) {
       const depth = Number(video.closest('.deck-card').dataset.depth)
       if (depth === 0 && canPlay) {
@@ -360,7 +362,8 @@ export function initPlacesDeck() {
     for (const [slug, stack] of links) {
       const video = stack.querySelector('.polaroid-front video')
       if (!video) continue
-      const canPlay = onScreen.has(slug) && !dialog.open && !document.hidden && !reducedMotion.matches
+      const canPlay =
+        onScreen.has(slug) && !dialog.open && !document.hidden && !reducedMotion.matches && !debugOff('video')
       if (canPlay) video.play().catch(() => {})
       else video.pause()
     }
