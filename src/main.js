@@ -118,7 +118,14 @@ desktop.addEventListener('change', () => {
 })
 // Covers resizes, fonts and images settling in, and the hero growing when the polaroid flips.
 new ResizeObserver(remeasure).observe(document.body)
-window.addEventListener('resize', remeasure)
+// Only a change of width can move anything: heights here use svh, so iOS Safari's toolbar
+// sliding away mid-scroll (a height-only resize) leaves the layout, and these measurements, as they are.
+let viewportWidth = window.innerWidth
+window.addEventListener('resize', () => {
+  if (window.innerWidth === viewportWidth) return
+  viewportWidth = window.innerWidth
+  remeasure()
+})
 update()
 
 // Hero polaroid flip. A screen reader hears the handwritten note through the status line.

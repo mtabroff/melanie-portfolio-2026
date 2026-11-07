@@ -123,7 +123,7 @@
   --hero-tilt: -2deg;
   /* 420 wide on desktop and 311 on a 375 phone, and always leaves room for the close and caption. */
   --deck-card-width: min(420px, 100vw - 64px, (100vh - var(--deck-caption-gap) - 100px) * 3 / 4);
-  --deck-card-width: min(420px, 100vw - 64px, (100dvh - var(--deck-caption-gap) - 100px) * 3 / 4);
+  --deck-card-width: min(420px, 100vw - 64px, (100svh - var(--deck-caption-gap) - 100px) * 3 / 4);
   --deck-unit: calc(var(--deck-card-width) / 420); /* edges and shadows shrink with the card, as in Figma */
   --deck-tilt-near: 4deg;  /* Figma's rotation runs the opposite way to CSS, so its -4 is 4 here */
   --deck-tilt-far: -5deg;  /* and its 5 is -5 */
