@@ -27,7 +27,7 @@ const panelLayout = window.matchMedia('(min-width: 1200px)')
 const projects = [...document.querySelectorAll('.project')]
 const siteNav = document.querySelector('.site-nav')
 const hero = document.querySelector('.hero')
-const firstCard = document.querySelector('.work-card')
+const heroPolaroid = document.querySelector('.hero-polaroid')
 
 // A card's text is fully shown until its center is this far (px) from the viewport center,
 // then fades out by PANEL_FADE_END. Cards are 568px apart, so the fades just overlap
@@ -54,7 +54,7 @@ function measure() {
   const top = (element) => element.getBoundingClientRect().top + window.scrollY
   layout = {
     heroBottom: hero.getBoundingClientRect().bottom + window.scrollY,
-    cardTop: top(firstCard),
+    polaroidTop: top(heroPolaroid),
     navHeight: siteNav.offsetHeight,
     sectionTops: sections.map(top),
     projectCenters: projects.map((project) => top(project) + project.offsetHeight / 2),
@@ -86,6 +86,19 @@ function updatePanel(scrollY, viewportHeight) {
   })
 }
 
+// The mobile top bar fills in as soon as the hero polaroid, the first thing under it, starts
+// to pass beneath it: on once the polaroid's top is within BAR_ON of the bar's bottom edge, and
+// off again only once it's BAR_OFF clear, so it can't flicker at the line. Always clear at the top.
+const BAR_ON = 4
+const BAR_OFF = 8
+
+function isOverContent(scrollY) {
+  if (scrollY <= 0) return false
+  const gap = layout.polaroidTop - scrollY - layout.navHeight // polaroid top to the bar's bottom
+  const wasOn = siteNav.classList.contains('is-over-content')
+  return wasOn ? gap < BAR_OFF : gap <= BAR_ON
+}
+
 let ticking = false
 
 function update() {
@@ -94,7 +107,7 @@ function update() {
   const { scrollY, innerHeight } = window
   siteNav.classList.toggle('is-past-hero', layout.heroBottom <= scrollY)
   // The mobile top bar is clear over the hero and fills in once the first card reaches it.
-  siteNav.classList.toggle('is-over-content', layout.cardTop < scrollY + layout.navHeight)
+  siteNav.classList.toggle('is-over-content', isOverContent(scrollY))
   updateSections(scrollY, innerHeight)
   updatePanel(scrollY, innerHeight)
 }
@@ -129,7 +142,6 @@ window.addEventListener('resize', () => {
 update()
 
 // Hero polaroid flip. A screen reader hears the handwritten note through the status line.
-const heroPolaroid = document.querySelector('.hero-polaroid')
 const heroFlipStatus = document.getElementById('hero-flip-status')
 const heroNote = heroPolaroid.querySelector('.hero-polaroid-back').textContent
 
