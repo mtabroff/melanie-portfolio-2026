@@ -2232,84 +2232,96 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * On a phone, taller cards, from the mobile mockup in Figma: 353 x 432, so about one and a
-   * half show at a time. Each phone or browser frame is placed by its center and sized as a
-   * whole, in % of the card's width (cqw), so everything animating inside it stays aligned.
-   * Frames bleed off the card's edges where the mockup has them do so.
+   * On a phone, taller cards, from the WorkCard component's Viewport=Mobile variants in Figma
+   * (353 x 550). Each phone or browser frame is placed by its center and sized as a whole, in %
+   * of the card's width (cqw), so everything animating inside it stays aligned, and keeps the
+   * tilt it has on desktop. Frames bleed off the card's edges where the variants have them do so.
    */
   @media (max-width: 599px) {
     .work-card {
-      aspect-ratio: 353 / 432;
+      aspect-ratio: 353 / 550;
     }
 
     .work-card > :is(.phone, .browser) {
       transform: translate(-50%, -50%) rotate(var(--rotate, 0deg));
     }
 
-    [data-layout='phone-pair'] .phone:nth-child(1) {
-      font-size: 0.103205cqw; /* 44.2% of the card wide */
-      left: 27.74cqw;
-      top: 64.93cqw;
-    }
-    [data-layout='phone-pair'] .phone:nth-child(2) {
-      font-size: 0.103205cqw; /* 44.2% of the card wide */
-      left: 72.14cqw;
-      top: 64.93cqw;
-    }
-    [data-layout='desktop-single'] .browser {
-      font-size: 0.309164cqw; /* 165.7% of the card wide */
-      left: 95.60cqw;
-      top: 73.07cqw;
-    }
-    .swap-card-showcase[data-layout='multi-tilted'] .browser {
-      font-size: 0.208969cqw; /* 112.0% of the card wide */
-      left: 42.12cqw;
-      top: 56.02cqw;
-    }
-    .swap-card-showcase[data-layout='multi-tilted'] .phone { /* the mockup's size and center, at the site's own tilt */
-      font-size: 0.111641cqw; /* 47.8% of the card wide */
-      left: 103.62cqw;
-      top: 78.31cqw;
-    }
-    [data-layout='phone-pair-tilted'] .phone:nth-child(1) {
-      font-size: 0.121442cqw; /* 52.0% of the card wide */
-      left: 44.42cqw;
-      top: 64.45cqw;
-    }
-    [data-layout='phone-pair-tilted'] .phone:nth-child(2) {
-      font-size: 0.121442cqw; /* 52.0% of the card wide */
-      left: 100.27cqw;
-      top: 64.45cqw;
-    }
     [data-layout='phone-single'] .phone {
-      font-size: 0.226309cqw; /* 96.8% of the card wide */
-      left: 50.11cqw;
-      top: 122.24cqw;
+      font-size: 0.226272cqw; /* 96.8% of the card wide */
+      left: 50cqw;
+      top: 125.6cqw;
     }
-    [data-layout='phone-trio'] .phone:nth-child(1) {
-      font-size: 0.102752cqw; /* 44.0% of the card wide */
-      left: 4.70cqw;
-      top: 65.01cqw;
+
+    [data-layout='desktop-single'] .browser {
+      font-size: 0.401866cqw; /* 215.4% of the card wide */
+      left: 120.5cqw;
+      top: 96.2cqw;
     }
-    [data-layout='phone-trio'] .phone:nth-child(2) {
-      font-size: 0.102752cqw; /* 44.0% of the card wide */
-      left: 50.20cqw;
-      top: 65.01cqw;
+
+    .swap-card-showcase[data-layout='multi-tilted'] .browser {
+      font-size: 0.250746cqw; /* 134.4% of the card wide */
+      left: 9.2cqw;
+      top: 67.6cqw;
     }
-    [data-layout='phone-trio'] .phone:nth-child(3) {
-      font-size: 0.102752cqw; /* 44.0% of the card wide */
-      left: 95.69cqw;
-      top: 65.01cqw;
+
+    .swap-card-showcase[data-layout='multi-tilted'] .phone {
+      font-size: 0.115473cqw; /* 49.4% of the card wide */
+      left: 75.7cqw;
+      top: 102.5cqw;
     }
+
     .allara-card[data-layout='multi'] .browser {
-      font-size: 0.208969cqw; /* 112.0% of the card wide */
-      left: 42.12cqw;
-      top: 56.02cqw;
+      font-size: 0.250000cqw; /* 134% of the card wide */
+      left: 50cqw;
+      top: 67cqw;
     }
-    .allara-card[data-layout='multi'] .phone { /* over the browser's side panel, as on desktop, scaled with it */
-      font-size: 0.078587cqw; /* 33.6% of the card wide */
-      left: 78.78cqw;
-      top: 77.00cqw;
+
+    .allara-card[data-layout='multi'] .phone {
+      font-size: 0.109162cqw; /* 46.7% of the card wide */
+      left: 76.5cqw; /* Figma's 79.9 would bleed 3.3% off the right; this keeps the phone fully in view */
+      top: 98.7cqw;
+    }
+
+    [data-layout='phone-pair'] .phone:nth-child(1) {
+      font-size: 0.112201cqw; /* 48% of the card wide */
+      left: 26cqw;
+      top: 77.9cqw;
+    }
+
+    [data-layout='phone-pair'] .phone:nth-child(2) {
+      font-size: 0.112201cqw; /* 48% of the card wide */
+      left: 74.2cqw;
+      top: 77.9cqw;
+    }
+
+    [data-layout='phone-pair-tilted'] .phone:nth-child(1) {
+      font-size: 0.139784cqw; /* 59.8% of the card wide */
+      left: 17.9cqw;
+      top: 80.8cqw;
+    }
+
+    [data-layout='phone-pair-tilted'] .phone:nth-child(2) {
+      font-size: 0.139784cqw; /* 59.8% of the card wide */
+      left: 82.1cqw;
+      top: 80.8cqw;
+    }
+
+    [data-layout='phone-trio'] .phone:nth-child(1) {
+      font-size: 0.134407cqw; /* 57.5% of the card wide */
+      left: -9.5cqw;
+      top: 77.9cqw;
+    }
+
+    [data-layout='phone-trio'] .phone:nth-child(2) {
+      font-size: 0.134407cqw; /* 57.5% of the card wide */
+      left: 50cqw;
+      top: 77.9cqw;
+    }
+
+    [data-layout='phone-trio'] .phone:nth-child(3) {
+      font-size: 0.134407cqw; /* 57.5% of the card wide */
+      left: 109.5cqw;
+      top: 77.9cqw;
     }
   }
 
