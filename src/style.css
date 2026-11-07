@@ -572,17 +572,17 @@ h3 {
 
 .phone,
 .browser {
-  font-size: calc(100cqh / 552 * var(--scale, 1));
+  font-size: calc(var(--card-height, 100cqh) / 552 * var(--scale, 1));
 }
 
 /* ----- PhoneShowcase: 427.804 x 885 in Figma, sized with --scale ----- */
 
 .phone {
   --bezel-radius: 69.232em;
-  top: calc(var(--top, 0) * 100cqh / 552);
+  top: calc(var(--top, 0) * var(--card-height, 100cqh) / 552);
   width: 427.804em;
   height: 885em;
-  transform: translateX(calc(-50% + var(--offset-x) * 100cqh / 552)) rotate(var(--rotate, 0deg));
+  transform: translateX(calc(-50% + var(--offset-x) * var(--card-height, 100cqh) / 552)) rotate(var(--rotate, 0deg));
 }
 
 .phone::before {
@@ -1175,13 +1175,13 @@ h3 {
 /* ----- DesktopShowcase: based on the 536px wide version in Figma, sized with --scale ----- */
 
 .browser {
-  top: calc(var(--top, 0) * 100cqh / 552);
+  top: calc(var(--top, 0) * var(--card-height, 100cqh) / 552);
   width: 536em;
   height: 351.75em;
   overflow: hidden;
   border-radius: 10.05em;
   box-shadow: 0 1.792em 62.732em rgba(0, 0, 0, 0.08);
-  transform: translateX(calc(-50% + var(--offset-x) * 100cqh / 552));
+  transform: translateX(calc(-50% + var(--offset-x) * var(--card-height, 100cqh) / 552));
 }
 
 .browser-screen {
@@ -1410,7 +1410,7 @@ h3 {
   --scale: 1.10606; /* 107.4% of the card wide */
   --offset-x: 0;
   --top: 70.1; /* 12.7% down */
-  left: calc(-31.2% + 296.43 * 100cqh / 552); /* its left edge at -31.2% of the card's width */
+  left: calc(-31.2% + 296.43 * var(--card-height, 100cqh) / 552); /* its left edge at -31.2% of the card's width */
 }
 
 .swap-card-showcase[data-layout='multi-tilted'] .phone {
@@ -2229,6 +2229,31 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .work-card {
     height: auto;
     aspect-ratio: 353 / 336.218;
+  }
+
+  /*
+   * On a phone, taller cards, so about one and a half show at a time. Everything inside is
+   * sized from the card's height and centered across it, so the composition scales up whole
+   * and the card's sides crop it, rather than anything stretching. Never shorter than Figma's.
+   */
+  @media (max-width: 599px) {
+    .work-card {
+      aspect-ratio: auto;
+      height: max(65svh, (100vw - 2 * var(--gutter)) * 336.218 / 353);
+    }
+
+    /*
+     * Only a single phone scales up well. Every other layout (side-by-side phones, a browser,
+     * a browser with phones) would lose too much to the crop, so these keep the size they have
+     * at Figma's proportions, centered in the taller card.
+     */
+    .work-card:not([data-layout='phone-single']) {
+      --card-height: calc(100cqw * 336.218 / 353);
+    }
+
+    .work-card:not([data-layout='phone-single']) > * {
+      translate: 0 calc((100cqh - var(--card-height)) / 2);
+    }
   }
 
   .work {
