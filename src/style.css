@@ -2116,18 +2116,36 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     pointer-events: none; /* the bar shouldn't block taps on the content under it */
   }
 
-  /* Clear over the hero. The page color fades in once the first work card reaches the bar. */
-  .site-nav::before {
+  /*
+   * Clear over the hero. The page color fades in once the first work card reaches the bar,
+   * with a 32px fade below it so the bar has no hard bottom edge.
+   */
+  .site-nav::before,
+  .site-nav::after {
     content: '';
     position: absolute;
     z-index: -1;
-    inset: 0;
-    background: var(--surface-page);
+    left: 0;
+    right: 0;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 200ms ease;
   }
 
-  .site-nav.is-over-content::before {
+  .site-nav::before {
+    top: 0;
+    bottom: 0;
+    background: var(--surface-page);
+  }
+
+  .site-nav::after {
+    top: 100%;
+    height: var(--space-4);
+    background: linear-gradient(to bottom, var(--surface-z0), transparent);
+  }
+
+  .site-nav.is-over-content::before,
+  .site-nav.is-over-content::after {
     opacity: 1;
   }
 
@@ -2253,7 +2271,8 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .deck-face,
   .nav-name,
   .site-nav.is-past-hero .nav-name,
-  .site-nav::before {
+  .site-nav::before,
+  .site-nav::after {
     transition: none;
   }
 
