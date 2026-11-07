@@ -106,7 +106,7 @@
   --edge-bottom: 34px;     /* the rails stop closer to the bottom of the frame in Figma */
   --column: 600px;         /* centered content column, including its gutter */
   --gutter: var(--space-3);
-  --topbar-height: var(--space-6);
+  --topbar-height: calc(var(--space-6) + 4px); /* the mobile top bar, with 2px extra above and below the links */
   --topbar-hairline: rgba(0, 0, 0, 0.06); /* along the bottom of the mobile top bar */
   --radius-card: 32px;
   --height-card: 552px;

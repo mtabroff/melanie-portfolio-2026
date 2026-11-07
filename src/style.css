@@ -2115,7 +2115,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     width: auto;
     height: var(--topbar-height);
     margin: 0;
-    padding: var(--space-2) var(--gutter) 0;
+    padding: calc(var(--space-2) + 2px) var(--gutter) 2px;
     flex-direction: row;
     align-items: flex-start;
     justify-content: flex-end;
