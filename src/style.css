@@ -2391,6 +2391,11 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
    * that morphs on open and close, gets the same unit.
    */
   @media (max-width: 599px) {
+    /* 96px from the bottom of the last work card to the top of the travels intro. */
+    .places {
+      padding-top: var(--space-12);
+    }
+
     .places-list,
     .deck-ghost {
       --polaroid-unit: var(--polaroid-unit-phone);
