@@ -2446,7 +2446,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
    */
   @media (max-width: 599px) {
     .contact {
-      --contact-space: 128px;
+      --contact-space: 144px;
       padding-block:
         calc(var(--contact-space) - var(--space-6) + 8.02 * var(--polaroid-unit-phone))
         var(--space-4);
