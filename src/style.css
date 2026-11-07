@@ -2319,15 +2319,15 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     }
 
     [data-layout='phone-pair-tilted'] .phone:nth-child(1) {
-      font-size: 0.139784cqw; /* 59.8% of the card wide */
-      left: 17.9cqw;
-      top: 80.8cqw;
+      font-size: 0.127862cqw; /* 54.7% of the card wide */
+      left: 20.4cqw;
+      top: 78cqw;
     }
 
     [data-layout='phone-pair-tilted'] .phone:nth-child(2) {
-      font-size: 0.139784cqw; /* 59.8% of the card wide */
-      left: 82.1cqw;
-      top: 80.8cqw;
+      font-size: 0.127862cqw; /* 54.7% of the card wide */
+      left: 76.6cqw;
+      top: 78cqw;
     }
 
     [data-layout='phone-trio'] .phone:nth-child(1) { /* 45.1% wide and 2px apart, so the side phones show about 60% */
