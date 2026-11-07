@@ -293,11 +293,12 @@ main {
   color: var(--text-primary);
 }
 
+/* An inline SVG, not the ↗ character, which iOS draws as a blue emoji. It takes the link's color. */
 .side-links .arrow {
-  display: inline-block;
+  display: block;
+  flex: none;
   width: var(--space-1);
-  font-size: var(--space-1); /* the fallback arrow is 1em wide, so this keeps it inside its 8px box */
-  line-height: 12px;
+  height: var(--space-1);
 }
 
 /* ---------- mobile footer: hidden on desktop, where SideNav and SideInfo hold these ---------- */
