@@ -18,6 +18,7 @@ const THROW = 0.72 // how far a card travels before it turns, as a share of its 
 const TILT = 7
 const TAP_SLOP = 8 // px of movement before a press counts as a drag
 const SWIPE_SHARE = 0.18 // of the card width, how far a drag has to go to send the card
+const DRAG_BACK_GIVE = 0.25 // dragging right, toward the previous photo, the top card moves this share of the way
 const DOUBLE_TAP_MS = 260 // a single tap waits this long, in case it turns out to be a double
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const EASE_SETTLE = 'cubic-bezier(0.2, 0, 0, 1)'
@@ -622,11 +623,18 @@ export function initPlacesDeck() {
     if (reducedMotion.matches) return
     const card = cards[index]
     card.classList.add('is-dragging')
-    card.style.transform = `translate(${dx}px, ${dy * 0.2}px) rotate(${(dx / stage.offsetWidth) * TILT}deg)`
-    // The next photo comes up on its paper as this one moves off it.
     const next = cards[(index + 1) % cards.length]
-    const progress = Math.min(Math.abs(dx) / (stage.offsetWidth * SWIPE_SHARE), 1)
-    next.firstChild.style.opacity = progress
+    if (dx < 0) {
+      // Toward the next photo, as in a photo app: the card follows the finger off to the left,
+      // and the next photo comes up on its paper as this one moves off it.
+      card.style.transform = `translate(${dx}px, ${dy * 0.2}px) rotate(${(dx / stage.offsetWidth) * TILT}deg)`
+      next.firstChild.style.opacity = Math.min(-dx / (stage.offsetWidth * SWIPE_SHARE), 1)
+    } else {
+      // Toward the previous one, which comes in from the left on release. The top card only
+      // gives a little, since it isn't the one that moves.
+      card.style.transform = `translate(${dx * DRAG_BACK_GIVE}px, ${dy * 0.1}px)`
+      next.firstChild.style.opacity = ''
+    }
   })
 
   function releaseCard() {
@@ -661,7 +669,11 @@ export function initPlacesDeck() {
     }
     const dx = event.clientX - x
     const from = releaseCard()
-    if (Math.abs(dx) >= stage.offsetWidth * SWIPE_SHARE) send(Math.sign(dx), from)
+    if (Math.abs(dx) < stage.offsetWidth * SWIPE_SHARE) return
+    // Swiping left goes to the next photo, thrown off to the left; swiping right brings the
+    // previous one back in from the left.
+    if (dx < 0) send(-1, from)
+    else bringBack()
   })
 
   stage.addEventListener('pointercancel', () => {
