@@ -2117,35 +2117,34 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   /*
-   * Clear over the hero. The page color fades in once the first work card reaches the bar,
-   * with a 32px fade below it so the bar has no hard bottom edge.
+   * Clear over the hero. Once the first work card reaches the bar, its background fades in:
+   * the page color, solid over the links (the top 55%), then fading out below them. The
+   * in-between stops ease the fade so it doesn't band.
    */
-  .site-nav::before,
-  .site-nav::after {
+  .site-nav::before {
     content: '';
     position: absolute;
     z-index: -1;
+    top: 0;
     left: 0;
     right: 0;
+    height: calc(var(--topbar-height) / 0.55);
+    background: linear-gradient(
+      to bottom,
+      var(--surface-z0) 0%,
+      var(--surface-z0) 55%,
+      color-mix(in srgb, var(--surface-z0) 90%, transparent) 63%,
+      color-mix(in srgb, var(--surface-z0) 66%, transparent) 72%,
+      color-mix(in srgb, var(--surface-z0) 34%, transparent) 82%,
+      color-mix(in srgb, var(--surface-z0) 10%, transparent) 91%,
+      transparent 100%
+    );
     opacity: 0;
     pointer-events: none;
     transition: opacity 200ms ease;
   }
 
-  .site-nav::before {
-    top: 0;
-    bottom: 0;
-    background: var(--surface-page);
-  }
-
-  .site-nav::after {
-    top: 100%;
-    height: var(--space-4);
-    background: linear-gradient(to bottom, var(--surface-z0), transparent);
-  }
-
-  .site-nav.is-over-content::before,
-  .site-nav.is-over-content::after {
+  .site-nav.is-over-content::before {
     opacity: 1;
   }
 
@@ -2271,8 +2270,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .deck-face,
   .nav-name,
   .site-nav.is-past-hero .nav-name,
-  .site-nav::before,
-  .site-nav::after {
+  .site-nav::before {
     transition: none;
   }
 
