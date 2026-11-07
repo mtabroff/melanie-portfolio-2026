@@ -330,6 +330,7 @@ h3 {
 
 .lede {
   font: var(--type-body-large);
+  line-height: var(--leading-paragraph);
   letter-spacing: var(--tracking-body-large);
   color: var(--text-primary);
 }
@@ -1568,6 +1569,10 @@ h3 {
   color: var(--text-project-muted);
 }
 
+.project-copy p {
+  line-height: var(--leading-paragraph);
+}
+
 .project-copy p + p {
   margin-top: var(--space-2);
 }
@@ -1617,6 +1622,16 @@ h3 {
   /* A faded panel's links can't be clicked. */
   .project:not(.is-panel-shown) .project-copy {
     pointer-events: none;
+  }
+
+  /*
+   * The side panel is only as tall as its card, and at 1.5 the longest description doesn't fit,
+   * so it keeps the label's 16px lines. Safari's text-wrap: pretty also breaks this narrow
+   * column into more lines than other browsers, enough to overflow, so it wraps plainly here.
+   */
+  .project-copy p {
+    line-height: inherit;
+    text-wrap: wrap;
   }
 }
 
@@ -2097,7 +2112,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
 .contact-reply {
   font: var(--type-body-small);
-  line-height: 1.2;
+  line-height: var(--leading-paragraph);
   letter-spacing: 0;
   color: var(--text-secondary);
 }
@@ -2236,10 +2251,6 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     width: auto;
     min-height: 120px;
     justify-content: center;
-  }
-
-  .contact-reply {
-    line-height: 1.5;
   }
 
   /*

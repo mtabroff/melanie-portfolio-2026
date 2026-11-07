@@ -83,6 +83,7 @@
   --tracking-body-large: -0.02em;
   --tracking-body-small: -0.01em;
   --tracking-label: -0.015em;
+  --leading-paragraph: 1.5; /* running text: the intros, card descriptions and contact copy */
   --tracking-accent: -0.01em;
 
   /* ---------- spacing: 8px grid ---------- */
