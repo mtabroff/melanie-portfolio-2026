@@ -2208,23 +2208,6 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     color: var(--text-nav-mobile);
   }
 
-  /*
-   * The active link is medium. Each link holds an invisible medium copy of its text, so it's
-   * already as wide as it will be when active and nothing shifts along the bar.
-   */
-  .nav-list a[aria-current='true'] {
-    font-weight: 500;
-  }
-
-  .nav-list a::before {
-    content: attr(data-nav); /* the link's own text */
-    display: block;
-    height: 0;
-    overflow: hidden;
-    visibility: hidden;
-    font-weight: 500;
-  }
-
   /* A 44px tall tap area, centered on the link, without changing the spacing from Figma. */
   .nav-list a::after {
     content: '';
