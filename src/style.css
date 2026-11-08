@@ -2428,7 +2428,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
       margin-bottom: calc(var(--space-2) - var(--space-6));
       font: var(--type-label-mobile);
       letter-spacing: var(--tracking-label);
-      color: var(--text-secondary);
+      color: var(--text-primary);
       text-align: left;
     }
 
