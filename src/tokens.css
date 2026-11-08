@@ -162,6 +162,7 @@
     --type-body-large: 400 16px/1.4 var(--font-sans);
     --type-accent: 400 12px/1.2 var(--font-accent);
     --type-label-mobile: 400 14px/16px var(--font-sans); /* the top bar and footer links, a step up from 12px for thumbs */
+    --type-label-mobile-medium: 500 14px/16px var(--font-sans); /* Helvetica Neue Medium: 600 would be its Bold */
 
     --gutter: 20px;
     --radius-card: var(--space-3);
