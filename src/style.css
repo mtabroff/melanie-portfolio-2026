@@ -143,35 +143,6 @@ main {
   justify-content: center;
 }
 
-/* Hidden while the hero, with the name on its polaroid, is on screen. */
-.nav-name {
-  position: absolute;
-  top: 0;
-  left: 0;
-  font: var(--type-label-medium);
-  letter-spacing: var(--tracking-label);
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.3s ease,
-    visibility 0s linear 0.3s;
-}
-
-.site-nav.is-past-hero .nav-name {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.3s ease;
-}
-
-/* Here the work side panel reaches into this corner, so the name takes two lines to clear it. */
-@media (min-width: 1200px) and (max-width: 1279px) {
-  .nav-name {
-    width: 62px;
-    white-space: normal;
-  }
-}
-
 .nav-list {
   display: flex;
   flex-direction: column;
@@ -190,9 +161,15 @@ main {
   transition: color 0.3s ease;
 }
 
-.nav-list a:hover,
 .nav-list a[aria-current='true'] {
   color: var(--text-primary);
+}
+
+/* Only with a real pointer: a touch screen keeps :hover on the last link tapped. */
+@media (hover: hover) {
+  .nav-list a:hover {
+    color: var(--text-primary);
+  }
 }
 
 /* ---------- theme toggle ---------- */
@@ -2152,37 +2129,27 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     display: block;
   }
 
+  /*
+   * The top bar: sticky at the top of the page, full width, links on the right. It's clear over
+   * the hero, and once the hero starts to pass under it main.js adds .is-over-content and it
+   * fills with the page color. The links' padding sets its height (--topbar-height) and makes
+   * each one a full-height tap target.
+   */
   .site-nav {
     top: 0;
     justify-self: stretch;
     width: auto;
-    height: var(--topbar-height);
+    height: auto;
     margin: 0;
-    padding: var(--topbar-padding) var(--gutter);
+    padding: 0 var(--gutter);
     flex-direction: row;
-    align-items: flex-start;
     justify-content: flex-end;
-    pointer-events: none; /* the bar shouldn't block taps on the content under it */
-    transform: translateZ(0); /* its own layer, which iOS places on whole device pixels */
+    background-color: transparent;
+    transition: background-color 200ms ease;
   }
 
-  /*
-   * Clear over the hero. Once content reaches the bar, a solid page-colored background fades
-   * in, with a clean bottom edge.
-   */
-  .site-nav::before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    inset: -4px 0 0; /* reaches 4px above the bar, so no sliver of page can show at the screen's edge */
-    background: var(--surface-z0);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 200ms ease;
-  }
-
-  .site-nav.is-over-content::before {
-    opacity: 1;
+  .site-nav.is-over-content {
+    background-color: var(--surface-z0);
   }
 
   .site-nav .theme-toggle,
@@ -2190,29 +2157,14 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     display: none;
   }
 
-  .nav-name {
-    top: var(--topbar-padding);
-    left: var(--gutter);
-  }
-
   .nav-list {
     flex-direction: row;
     gap: var(--space-2);
-    pointer-events: auto;
   }
 
   .nav-list a {
-    position: relative;
-    padding-block: 0;
+    padding-block: var(--topbar-padding);
     font: var(--type-label-mobile);
-    color: var(--text-nav-mobile);
-  }
-
-  /* A 44px tall tap area, centered on the link, without changing the spacing from Figma. */
-  .nav-list a::after {
-    content: '';
-    position: absolute;
-    inset: calc(50% - 22px) calc(-1 * var(--space-1));
   }
 
   .site-footer {
@@ -2529,9 +2481,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   .polaroid,
   .deck-card,
   .deck-face,
-  .nav-name,
-  .site-nav.is-past-hero .nav-name,
-  .site-nav::before {
+  .site-nav {
     transition: none;
   }
 

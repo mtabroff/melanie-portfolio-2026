@@ -46,57 +46,63 @@ function setActiveSection(id) {
   }
 }
 
-// Where things sit on the page, measured only when the layout changes. Scrolling then reads
-// nothing but scrollY, so it never forces a layout while the card animations are running.
-let layout = null
+// The active nav link: the last section whose top has passed a line a third of the way down a
+// phone screen, or halfway down a wider one. Each section is watched against everything above
+// that line, so a section counts as soon as its top passes it, however fast the page moves. The
+// end of the page counts for the last section, since on a tall screen it can't reach the line.
+const onLine = new Set()
+let atPageEnd = false
 
-function measure() {
-  const top = (element) => element.getBoundingClientRect().top + window.scrollY
-  layout = {
-    heroBottom: hero.getBoundingClientRect().bottom + window.scrollY,
-    polaroidTop: top(heroPolaroid),
-    navHeight: siteNav.offsetHeight,
-    sectionTops: sections.map(top),
-    projectCenters: projects.map((project) => top(project) + project.offsetHeight / 2),
-    pageHeight: document.documentElement.scrollHeight,
-  }
+function showActiveSection() {
+  const current = atPageEnd ? sections.at(-1) : sections.findLast((section) => onLine.has(section))
+  if (current) setActiveSection(current.id)
 }
 
-function updateSections(scrollY, viewportHeight) {
-  // The active section is the one crossing this line. It sits higher on mobile, where
-  // the hero is short enough that the next section starts near the middle of the screen.
-  const line = scrollY + viewportHeight * (desktop.matches ? 1 / 2 : 1 / 3)
-  let current = 0
-  layout.sectionTops.forEach((top, index) => {
-    if (top <= line) current = index
-  })
-  // On a tall screen the footer can't scroll up to the line, so the end of the page counts too.
-  if (scrollY + viewportHeight >= layout.pageHeight - 1) current = sections.length - 1
-  setActiveSection(sections[current].id)
+let sectionWatcher = null
+
+function watchSections() {
+  sectionWatcher?.disconnect()
+  onLine.clear()
+  const line = desktop.matches ? 50 : 100 / 3
+  sectionWatcher = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) onLine.add(entry.target)
+        else onLine.delete(entry.target)
+      }
+      showActiveSection()
+    },
+    { rootMargin: `10000% 0px ${line - 100}% 0px` },
+  )
+  sections.forEach((section) => sectionWatcher.observe(section))
 }
 
-function updatePanel(scrollY, viewportHeight) {
-  if (!panelLayout.matches) return
-  const viewportCenter = scrollY + viewportHeight / 2
-  projects.forEach((project, index) => {
-    const distance = Math.abs(layout.projectCenters[index] - viewportCenter)
-    const reveal = (PANEL_FADE_END - distance) / (PANEL_FADE_END - PANEL_HOLD)
-    project.style.setProperty('--reveal', Math.min(Math.max(reveal, 0), 1))
-    project.classList.toggle('is-panel-shown', reveal > 0)
-  })
-}
+// The page's last pixel: 1px tall but pulled up over the end of the page, so it adds no height.
+const pageEnd = Object.assign(document.createElement('div'), { style: 'height: 1px; margin-top: -1px' })
+document.getElementById('main').append(pageEnd)
+new IntersectionObserver(([entry]) => {
+  atPageEnd = entry.isIntersecting
+  showActiveSection()
+}).observe(pageEnd)
 
-// The mobile top bar fills in as soon as the hero polaroid, the first thing under it, starts
-// to pass beneath it: on once the polaroid's top is within BAR_ON of the bar's bottom edge, and
-// off again only once it's BAR_OFF clear, so it can't flicker at the line. Always clear at the top.
-const BAR_ON = 4
-const BAR_OFF = 8
+watchSections()
 
-function isOverContent(scrollY) {
-  if (scrollY <= 0) return false
-  const gap = layout.polaroidTop - scrollY - layout.navHeight // polaroid top to the bar's bottom
-  const wasOn = siteNav.classList.contains('is-over-content')
-  return wasOn ? gap < BAR_OFF : gap <= BAR_ON
+// The mobile top bar is clear over the hero, and fills with the page color once the hero starts
+// to pass under it. The hero is watched against the screen below the bar (and well past the
+// bottom, so only its top edge matters): fully inside means nothing has scrolled under the bar yet.
+let barWatcher = null
+
+function watchBar() {
+  barWatcher?.disconnect()
+  const barHeight = desktop.matches ? 0 : siteNav.offsetHeight
+  barWatcher = new IntersectionObserver(
+    ([entry]) => {
+      siteNav.classList.toggle('is-over-content', entry.intersectionRatio < 1)
+      syncThemeColor()
+    },
+    { rootMargin: `-${barHeight}px 0px 100% 0px`, threshold: 1 },
+  )
+  barWatcher.observe(hero)
 }
 
 // The browser's toolbar color follows what's under the top bar, so Safari doesn't keep sampling
@@ -110,51 +116,48 @@ function syncThemeColor() {
   if (color) themeColorTags.forEach((tag) => tag.setAttribute('content', color))
 }
 
+watchBar()
+
+// The work side panel, on wide screens: each card's text fades with its distance from the
+// middle of the screen, so it's the one scroll-driven thing left. Positions are measured when
+// the layout changes, and scrolling reads only scrollY.
+let projectCenters = null
 let ticking = false
 
-function update() {
+function updatePanel() {
   ticking = false
-  if (!layout) measure()
-  const { scrollY, innerHeight } = window
-  siteNav.classList.toggle('is-past-hero', layout.heroBottom <= scrollY)
-  // The mobile top bar is clear over the hero and fills in once the first card reaches it.
-  const overContent = isOverContent(scrollY)
-  if (overContent !== siteNav.classList.contains('is-over-content')) {
-    siteNav.classList.toggle('is-over-content', overContent)
-    syncThemeColor()
-  }
-  updateSections(scrollY, innerHeight)
-  updatePanel(scrollY, innerHeight)
+  if (!panelLayout.matches) return
+  projectCenters ??= projects.map((project) => {
+    return project.getBoundingClientRect().top + window.scrollY + project.offsetHeight / 2
+  })
+  const viewportCenter = window.scrollY + window.innerHeight / 2
+  projects.forEach((project, index) => {
+    const distance = Math.abs(projectCenters[index] - viewportCenter)
+    const reveal = (PANEL_FADE_END - distance) / (PANEL_FADE_END - PANEL_HOLD)
+    project.style.setProperty('--reveal', Math.min(Math.max(reveal, 0), 1))
+    project.classList.toggle('is-panel-shown', reveal > 0)
+  })
 }
 
-function requestUpdate() {
-  if (ticking) return
+function requestPanelUpdate() {
+  if (ticking || !panelLayout.matches) return
   ticking = true
-  requestAnimationFrame(update)
+  requestAnimationFrame(updatePanel)
 }
 
-function remeasure() {
-  layout = null
-  requestUpdate()
-}
+window.addEventListener('scroll', requestPanelUpdate, { passive: true })
+new ResizeObserver(() => {
+  projectCenters = null
+  requestPanelUpdate()
+}).observe(document.body)
+requestPanelUpdate()
 
-window.addEventListener('scroll', requestUpdate, { passive: true })
 desktop.addEventListener('change', () => {
-  remeasure()
+  watchSections()
+  watchBar()
   // An open description holds its card only on mobile, so crossing the breakpoint changes that.
   for (const project of projects) project.dispatchEvent(new Event('revealchange'))
 })
-// Covers resizes, fonts and images settling in, and the hero growing when the polaroid flips.
-new ResizeObserver(remeasure).observe(document.body)
-// Only a change of width can move anything: heights here use svh, so iOS Safari's toolbar
-// sliding away mid-scroll (a height-only resize) leaves the layout, and these measurements, as they are.
-let viewportWidth = window.innerWidth
-window.addEventListener('resize', () => {
-  if (window.innerWidth === viewportWidth) return
-  viewportWidth = window.innerWidth
-  remeasure()
-})
-update()
 
 // Nav links: a quick eased scroll to the section wherever the browser isn't already smooth
 // scrolling it. The CSS turns scroll-behavior: smooth on only for a mouse or trackpad, so this
@@ -276,7 +279,8 @@ document.addEventListener('keydown', (event) => {
 
 panelLayout.addEventListener('change', () => {
   closeReveals()
-  requestUpdate()
+  projectCenters = null
+  requestPanelUpdate()
 })
 
 initPlacesDeck()
