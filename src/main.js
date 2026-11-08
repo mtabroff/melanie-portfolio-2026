@@ -90,15 +90,19 @@ watchSections()
 // The mobile top bar is clear over the hero, and fills with the page color once the hero starts
 // to pass under it. The hero is watched against the screen below the bar (and well past the
 // bottom, so only its top edge matters): fully inside means nothing has scrolled under the bar yet.
+// The watched area starts BAR_SLACK above the bar's bottom edge, so a hero that sits a fraction of
+// a pixel under it on load, as a high-density screen can lay it out, doesn't fill the bar.
+const BAR_SLACK = 2
 let barWatcher = null
 
 function watchBar() {
   barWatcher?.disconnect()
-  const barHeight = desktop.matches ? 0 : siteNav.offsetHeight
+  const barHeight = desktop.matches ? 0 : Math.max(siteNav.offsetHeight - BAR_SLACK, 0)
   barWatcher = new IntersectionObserver(
     ([entry]) => {
       siteNav.classList.toggle('is-over-content', entry.intersectionRatio < 1)
       syncThemeColor()
+      showLayout()
     },
     { rootMargin: `-${barHeight}px 0px 100% 0px`, threshold: 1 },
   )
@@ -228,6 +232,7 @@ function showLayout(note) {
     `svh ${unit('svh')}  lvh ${unit('lvh')}  dvh ${unit('dvh')}`,
     `pointer:fine ${media('(pointer: fine)')}  hover ${media('(hover: hover)')}  reduce motion ${media('(prefers-reduced-motion: reduce)')}`,
     // As at the top of the page, wherever it's scrolled.
+    `bar ${siteNav.classList.contains('is-over-content') ? 'FILLED' : 'clear'}  bar bottom ${nav.bottom}  hero top ${hero.top + window.scrollY}  hero bg top ${Math.round(document.querySelector('.hero-bg').getBoundingClientRect().top + window.scrollY)}`,
     `hero ${Math.round(hero.height)}  polaroid below bar ${Math.round(card.top + window.scrollY - nav.height)}  card peek ${Math.round(window.innerHeight - firstCard.top - window.scrollY)}`,
     note ? `last: ${note}` : panel.textContent.split('\n').find((line) => line.startsWith('last:')) ?? '',
   ].join('\n')
