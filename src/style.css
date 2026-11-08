@@ -2492,6 +2492,12 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
    */
   .project-copy {
     background: var(--surface-card);
+    padding-right: var(--space-3); /* the same 24px as the left; the close button sits above the text */
+  }
+
+  /* Plain wrapping, so lines run out to that padding; Safari's pretty wrapping cuts them well short. */
+  .project-copy p {
+    text-wrap: wrap;
   }
 
   .project.is-revealed .work-card {
