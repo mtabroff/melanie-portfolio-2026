@@ -19,6 +19,7 @@
   --surface-z0: #ffffff;
   --surface-background: #f3f2f0;
   --surface-background-subtle: #fffef8;
+  --surface-hero-top: #e6e5dd; /* the top edge of the hero's photo background, for the browser's theme-color */
   --surface-divider: #dbdbdb;
   --surface-card-fill: #f6f5f3; /* used by WorkCard in Figma, but not a Figma variable */
   --text-project: #1b1b1b;                  /* same: hardcoded on SideColumn in Figma */
@@ -208,6 +209,7 @@
     --surface-z0: #101010;
     --surface-background: #1a1a1a;
     --surface-background-subtle: #101010;
+    --surface-hero-top: #1d1d1a;
     --surface-divider: #2e2e2e;
     --surface-card-fill: #1c1c1b;
     --text-project: #f2f2f2;
@@ -239,6 +241,7 @@
   --surface-z0: #101010;
   --surface-background: #1a1a1a;
   --surface-background-subtle: #101010;
+  --surface-hero-top: #1d1d1a;
   --surface-divider: #2e2e2e;
   --surface-card-fill: #1c1c1b;
   --text-project: #f2f2f2;

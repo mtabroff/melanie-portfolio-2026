@@ -99,6 +99,17 @@ function isOverContent(scrollY) {
   return wasOn ? gap < BAR_OFF : gap <= BAR_ON
 }
 
+// The browser's toolbar color follows what's under the top bar, so Safari doesn't keep sampling
+// the page to tint it: the hero's top edge while the bar is clear, the page color once it fills.
+// Both theme-color tags get it, since the theme toggle can override the system setting.
+const themeColorTags = [...document.querySelectorAll('meta[name="theme-color"]')]
+
+function syncThemeColor() {
+  const token = siteNav.classList.contains('is-over-content') ? '--surface-z0' : '--surface-hero-top'
+  const color = getComputedStyle(root).getPropertyValue(token).trim()
+  if (color) themeColorTags.forEach((tag) => tag.setAttribute('content', color))
+}
+
 let ticking = false
 
 function update() {
@@ -107,7 +118,11 @@ function update() {
   const { scrollY, innerHeight } = window
   siteNav.classList.toggle('is-past-hero', layout.heroBottom <= scrollY)
   // The mobile top bar is clear over the hero and fills in once the first card reaches it.
-  siteNav.classList.toggle('is-over-content', isOverContent(scrollY))
+  const overContent = isOverContent(scrollY)
+  if (overContent !== siteNav.classList.contains('is-over-content')) {
+    siteNav.classList.toggle('is-over-content', overContent)
+    syncThemeColor()
+  }
   updateSections(scrollY, innerHeight)
   updatePanel(scrollY, innerHeight)
 }
@@ -297,6 +312,7 @@ const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 
 function applyTheme(theme) {
   root.dataset.theme = theme
+  syncThemeColor()
   const next = theme === 'dark' ? 'light' : 'dark'
   for (const toggle of toggles) toggle.setAttribute('aria-label', `switch to ${next} mode`)
 }
