@@ -6,12 +6,12 @@ import { debugOff } from './debug.js'
 
 // Opening, about 450ms: the front photo becomes the top card, the back polaroids become the
 // paper cards, and the frames and the rest of the page fade. The caption and close come last.
+// Closing plays the same timeline backwards.
 const MORPH_MS = 450
 const FRAME_FADE_MS = 100
-const CHROME_OUT_MS = 80 // closing: the caption and close go first
-const LANDING_MS = 180 // closing: by here the settle ease has the cards nearly home
 const ZOOM_MS = 360
 const FADE_MS = 200
+const MORPH_TOTAL = MORPH_MS + FADE_MS // the morph, then the caption and close fading in
 const FLIGHT_MS = 280
 const FLIGHT_TURN = 0.45 // the share of a flight when the card passes behind or in front of the deck
 const THROW = 0.72 // how far a card travels before it turns, as a share of its width
@@ -22,6 +22,13 @@ const DRAG_BACK_GIVE = 0.25 // dragging right, toward the previous photo, the to
 const DOUBLE_TAP_MS = 260 // a single tap waits this long, in case it turns out to be a double
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const EASE_SETTLE = 'cubic-bezier(0.2, 0, 0, 1)'
+
+// An easing curve played backwards: cubic-bezier(a, b, c, d) becomes (1 - c, 1 - d, 1 - a, 1 - b).
+const NAMED_EASING = { 'ease-out': [0, 0, 0.58, 1], 'ease-in': [0.42, 0, 1, 1], 'ease-in-out': [0.42, 0, 0.58, 1], linear: [0, 0, 1, 1] }
+function mirrorEasing(easing) {
+  const [a, b, c, d] = NAMED_EASING[easing] ?? easing.match(/-?[\d.]+/g).map(Number)
+  return `cubic-bezier(${1 - c}, ${1 - d}, ${1 - a}, ${1 - b})`
+}
 const LOAD_AHEAD = 3 // cards behind the top one that load early, so the next one is ready
 const HINT_KEY = 'deck-hint-seen'
 const FULL_BLEED_ENABLED = false // off for now. Turning it on brings back double-tap, and its short wait on a tap.
@@ -126,6 +133,7 @@ export function initPlacesDeck() {
   let index = 0
   let closing = false
   let morphing = false
+  let openMotion = [] // the opening's animations, so closing mid-way can turn them around
   let closeRequested = false
   let zoomed = false
   let press = null
@@ -226,90 +234,72 @@ export function initPlacesDeck() {
     stage.querySelectorAll('.deck-card-polaroid').forEach((polaroid) => polaroid.remove())
   }
 
-  function morphOpen() {
-    morphing = true
+  // The open/close morph, as one timeline of MORPH_TOTAL. Closing is its exact reverse: each part
+  // runs its keyframes backwards, with the mirror image of its easing curve, timed to end where it
+  // started on the way in. So the paths, durations and easing match, mirrored, and the closing
+  // parts hold their state until the dialog closes.
+  function morphPart(element, keyframes, { duration, delay = 0, easing, fill = 'none' }, closing) {
+    if (!closing) return element.animate(keyframes, { duration, delay, easing, fill })
+    return element.animate([...keyframes].reverse(), {
+      duration,
+      delay: MORPH_TOTAL - delay - duration,
+      easing: mirrorEasing(easing),
+      fill: 'both',
+    })
+  }
+
+  function morphAnimations({ closing = false } = {}) {
     showGhost({ frameOnly: true })
     const motion = [
-      scrim.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }),
-      ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FRAME_FADE_MS, easing: 'ease-out', fill: 'forwards' }),
+      morphPart(scrim, [{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' }, closing),
+      morphPart(ghost, [{ opacity: 1 }, { opacity: 0 }], { duration: FRAME_FADE_MS, easing: 'ease-out', fill: 'forwards' }, closing),
     ]
     for (const card of visibleCards()) {
       const depth = Number(card.dataset.depth)
       if (depth === 0) {
-        motion.push(
-          card.animate(
-            [
-              { ...photoBox(), boxShadow: 'inset 0 0 0 0 transparent, 0 0 0 0 transparent' },
-              { left: '0px', top: '0px', width: `${stage.offsetWidth}px`, height: `${stage.offsetHeight}px` },
-            ],
-            { duration: MORPH_MS, easing: EASE_SETTLE },
-          ),
-        )
+        const full = { left: '0px', top: '0px', width: `${stage.offsetWidth}px`, height: `${stage.offsetHeight}px` }
+        const flat = 'inset 0 0 0 0 transparent, 0 0 0 0 transparent'
+        motion.push(morphPart(card, [{ ...photoBox(), boxShadow: flat }, full], { duration: MORPH_MS, easing: EASE_SETTLE }, closing))
       } else {
         // Written as the same list at both ends, so the rotation itself is what interpolates.
         const end = `translate(0px, 0px) rotate(${angleOf(card)}rad) scale(1)`
         motion.push(
-          card.animate([{ transform: stackTransform(depth) }, { transform: end }], {
-            duration: MORPH_MS,
-            easing: EASE_SETTLE,
-          }),
-          addCardPolaroid(card, depth).animate([{ opacity: 1 }, { opacity: 0 }], {
-            duration: FRAME_FADE_MS,
-            easing: 'ease-out',
-            fill: 'forwards',
-          }),
+          morphPart(card, [{ transform: stackTransform(depth) }, { transform: end }], { duration: MORPH_MS, easing: EASE_SETTLE }, closing),
+          morphPart(addCardPolaroid(card, depth), [{ opacity: 1 }, { opacity: 0 }], { duration: FRAME_FADE_MS, easing: 'ease-out', fill: 'forwards' }, closing),
         )
       }
     }
-    fadeChrome([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, delay: MORPH_MS, fill: 'backwards' })
-    Promise.all(motion.map((animation) => animation.finished)).then(clearMorph, () => {})
+    for (const element of [caption, closeButton, hint]) {
+      motion.push(morphPart(element, [{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, delay: MORPH_MS, easing: 'ease-out', fill: 'backwards' }, closing))
+    }
+    return motion
   }
 
+  function morphOpen() {
+    morphing = true
+    openMotion = morphAnimations()
+    Promise.all(openMotion.map((animation) => animation.finished)).then(clearMorph, () => {})
+  }
+
+  // The opening, backwards. Closing mid-way through the opening turns those animations around
+  // where they are; otherwise the closing timeline runs from the deck at rest. The stack has
+  // already been redrawn with the last-viewed photo in front, so the top card shrinks straight
+  // back into that photo, and the frames fade in around it.
   function morphClose() {
-    const landing = CHROME_OUT_MS + LANDING_MS
-    const fadeIn = { duration: FRAME_FADE_MS, delay: landing, easing: 'ease-out', fill: 'both' }
-    const cards = visibleCards().map((card) => {
-      const style = getComputedStyle(card)
-      return {
-        card,
-        depth: Number(card.dataset.depth),
-        transform: style.transform,
-        box: { left: style.left, top: style.top, width: style.width, height: style.height },
-      }
-    })
-    // Closing can interrupt the opening or a card in flight, and carries on from where they were.
-    stage.getAnimations({ subtree: true }).forEach((animation) => animation.cancel())
-    clearMorph()
-    showGhost({ frameOnly: false })
-    const timing = { duration: MORPH_MS, delay: CHROME_OUT_MS, easing: EASE_SETTLE, fill: 'both' }
-    const motion = [
-      ...fadeChrome([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' }),
-      ghost.animate([{ opacity: 0 }, { opacity: 1 }], fadeIn),
-      scrim.animate([{ opacity: 1 }, { opacity: 0 }], {
-        duration: FADE_MS,
-        delay: landing - FADE_MS / 2,
-        easing: 'ease-out',
-        fill: 'both',
-      }),
-    ]
-    for (const { card, depth, transform, box } of cards) {
-      if (depth === 0) {
-        motion.push(
-          card.animate([box, photoBox()], timing),
-          // The list's front photo may not be this one, so it hands over right at the end.
-          card.animate([{ opacity: 1, offset: 0 }, { opacity: 1, offset: 0.85 }, { opacity: 0, offset: 1 }], {
-            duration: MORPH_MS,
-            delay: CHROME_OUT_MS,
-            fill: 'both',
-          }),
-        )
-      } else {
-        motion.push(
-          card.animate([{ transform }, { transform: stackTransform(depth) }], timing),
-          addCardPolaroid(card, depth).animate([{ opacity: 0 }, { opacity: 1 }], fadeIn),
-        )
-      }
+    let motion
+    if (morphing && openMotion.some((animation) => animation.playState === 'running')) {
+      motion = openMotion
+      motion.forEach((animation) => {
+        animation.effect.updateTiming({ fill: 'both' })
+        animation.reverse()
+      })
+    } else {
+      // A card in flight, a swipe or a send, settles first.
+      stage.getAnimations({ subtree: true }).forEach((animation) => animation.cancel())
+      clearMorph()
+      motion = morphAnimations({ closing: true })
     }
+    morphing = true
     return Promise.all(motion.map((animation) => animation.finished.catch(() => {})))
   }
 
@@ -372,12 +362,6 @@ export function initPlacesDeck() {
 
   function visibleCards() {
     return cards.filter((card) => Number(card.dataset.depth) < 3)
-  }
-
-  function fadeChrome(keyframes, options) {
-    return [caption, closeButton, hint].map((element) =>
-      element.animate(keyframes, { easing: 'ease-out', ...options }),
-    )
   }
 
   // Only ever once, the first time someone on a phone opens a place.
