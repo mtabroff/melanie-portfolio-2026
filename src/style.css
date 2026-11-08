@@ -2455,17 +2455,17 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
   /*
    * On a phone the CTA, just its two lines 8px apart, sits in the same space above and below:
-   * --contact-space from the lowest corner of the last travels stack down to it, and from it to
-   * the footer row. Above, that space is the travels section's 48px bottom padding plus this
-   * top padding, less the 8 polaroid units the last stack's tilted back cards hang below it.
+   * --space-contact from the lowest corner of the last travels stack down to it, and from it to
+   * the footer row, which sits --space-footer-bottom above the end of the page. Above, that space
+   * is the travels section's 48px bottom padding plus this top padding, less the 8 polaroid
+   * units the last stack's tilted back cards hang below it.
    */
   @media (max-width: 599px) {
     .contact {
-      --contact-space: 144px;
       padding-block:
-        calc(var(--contact-space) - var(--space-6) + 8.02 * var(--polaroid-unit-phone))
-        var(--space-4);
-      gap: var(--contact-space);
+        calc(var(--space-contact) - var(--space-6) + 8.02 * var(--polaroid-unit-phone))
+        var(--space-footer-bottom);
+      gap: var(--space-contact);
     }
 
     .contact-cta {
