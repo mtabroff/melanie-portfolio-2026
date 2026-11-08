@@ -187,7 +187,7 @@
     --type-body-large: 400 18px/1.5 var(--font-sans);
 
     /* Contact, from Figma's spacing variables: the space above and below the CTA, and below the footer row. */
-    --space-contact: 136px;
+    --space-contact: 176px;
     --space-footer-bottom: 40px;
   }
 }
