@@ -141,11 +141,11 @@ window.addEventListener('resize', () => {
 })
 update()
 
-// Nav links on a touch screen: a quick eased scroll to the section. With a mouse or trackpad
-// the CSS's scroll-behavior: smooth already does this, and with reduced motion the link just
-// jumps. Each section's scroll-margin-top keeps it clear of the top bar. A touch or wheel
-// during the scroll stops it, so it never fights a finger.
-const finePointer = window.matchMedia('(pointer: fine)')
+// Nav links: a quick eased scroll to the section wherever the browser isn't already smooth
+// scrolling it. The CSS turns scroll-behavior: smooth on only for a mouse or trackpad, so this
+// covers phones, without relying on how a phone reports its pointer. With reduced motion the
+// link just jumps. Each section's scroll-margin-top keeps it clear of the top bar. A touch or
+// wheel during the scroll stops it, so it never fights a finger.
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 const NAV_SCROLL_MS = 450
 let navScroll = null
@@ -173,7 +173,9 @@ function scrollToSection(section) {
 
 for (const link of navLinks.values()) {
   link.addEventListener('click', (event) => {
-    if (finePointer.matches || reducedMotion.matches) return
+    const cssSmooth = getComputedStyle(root).scrollBehavior === 'smooth'
+    showLayout(`tap ${link.hash}: ${reducedMotion.matches ? 'jump (reduced motion)' : cssSmooth ? 'css smooth scroll' : `glide ${NAV_SCROLL_MS}ms`}`)
+    if (reducedMotion.matches || cssSmooth) return
     const section = document.getElementById(link.hash.slice(1))
     if (!section) return
     event.preventDefault()
@@ -184,6 +186,38 @@ for (const link of navLinks.values()) {
 
 window.addEventListener('touchstart', stopNavScroll, { passive: true })
 window.addEventListener('wheel', stopNavScroll, { passive: true })
+
+// ?showlayout: a small panel with what the phone actually reports, for debugging on a device.
+function showLayout(note) {
+  if (!root.classList.contains('debug-showlayout')) return
+  let panel = document.getElementById('layout-panel')
+  if (!panel) {
+    panel = Object.assign(document.createElement('pre'), { id: 'layout-panel' })
+    document.body.append(panel)
+  }
+  const unit = (u) => {
+    const probe = Object.assign(document.createElement('div'), { style: `position:absolute;height:100${u}` })
+    document.body.append(probe)
+    const height = probe.offsetHeight
+    probe.remove()
+    return height
+  }
+  const box = (selector) => document.querySelector(selector).getBoundingClientRect()
+  const nav = box('.site-nav'), hero = box('.hero'), card = box('.hero-polaroid-tilt'), firstCard = box('.work-card')
+  const media = (query) => (window.matchMedia(query).matches ? 'yes' : 'no')
+  panel.textContent = [
+    `innerHeight ${window.innerHeight}  visualViewport ${Math.round(window.visualViewport?.height ?? 0)}`,
+    `svh ${unit('svh')}  lvh ${unit('lvh')}  dvh ${unit('dvh')}`,
+    `pointer:fine ${media('(pointer: fine)')}  hover ${media('(hover: hover)')}  reduce motion ${media('(prefers-reduced-motion: reduce)')}`,
+    // As at the top of the page, wherever it's scrolled.
+    `hero ${Math.round(hero.height)}  polaroid below bar ${Math.round(card.top + window.scrollY - nav.height)}  card peek ${Math.round(window.innerHeight - firstCard.top - window.scrollY)}`,
+    note ? `last: ${note}` : panel.textContent.split('\n').find((line) => line.startsWith('last:')) ?? '',
+  ].join('\n')
+}
+
+if (root.classList.contains('debug-showlayout')) {
+  window.addEventListener('load', () => showLayout())
+}
 
 // Hero polaroid flip. A screen reader hears the handwritten note through the status line.
 const heroFlipStatus = document.getElementById('hero-flip-status')

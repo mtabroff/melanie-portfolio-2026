@@ -2611,6 +2611,22 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
 /* ---------- temporary debug switches, set from the URL (see src/debug.js) ---------- */
 
+/* ?showlayout: the debug readout from main.js. */
+#layout-panel {
+  position: fixed;
+  z-index: 100;
+  left: 8px;
+  right: 8px;
+  bottom: 96px;
+  margin: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font: 11px/1.4 ui-monospace, Menlo, monospace;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
 /* ?nobg: the hero and contact backgrounds go flat, without the zoomed photo or its fades. */
 .debug-nobg :is(.hero-bg, .contact-bg) {
   background: var(--surface-page);
