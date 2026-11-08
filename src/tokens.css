@@ -108,7 +108,7 @@
   --column: 600px;         /* centered content column, including its gutter */
   --gutter: var(--space-3);
   --topbar-height: calc(2 * var(--topbar-padding) + 16px); /* the mobile top bar: padding, the links' 16px line, padding */
-  --topbar-padding: 20px;
+  --topbar-padding: 24px;
   --radius-card: 32px;
   --height-card: 552px;
   --hero-peek: 17px;       /* how much of the first card shows on the first screen */
