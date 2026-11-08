@@ -2405,9 +2405,21 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
    * that morphs on open and close, gets the same unit.
    */
   @media (max-width: 599px) {
-    /* 96px from the bottom of the last work card to the top of the travels intro. */
+    /*
+     * 96px from the bottom of the last work card to the top of the travels intro, kept at the end
+     * of the work section, so a nav jump to travels lands on the intro rather than on the gap.
+     */
+    .work {
+      padding-bottom: var(--space-12);
+    }
+
     .places {
-      padding-top: var(--space-12);
+      padding-top: 0;
+    }
+
+    /* Nav jumps land each section's content 32px below the top bar. */
+    .section {
+      scroll-margin-top: calc(var(--topbar-height) + var(--space-4));
     }
 
     .places-list,
