@@ -1667,6 +1667,11 @@ h3 {
   padding-block: 100px;
 }
 
+/* A label over the travels intro, on phones only. */
+.places-label {
+  display: none;
+}
+
 .places-list {
   display: flex;
   flex-direction: column;
@@ -2415,6 +2420,16 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
 
     .places {
       padding-top: 0;
+    }
+
+    /* 16px above the intro: the section's 48px gap, less 32. */
+    .places-label {
+      display: block;
+      margin-bottom: calc(var(--space-2) - var(--space-6));
+      font: var(--type-label-mobile);
+      letter-spacing: var(--tracking-label);
+      color: var(--text-secondary);
+      text-align: left;
     }
 
     /* Nav jumps land each section's content 32px below the top bar. */
