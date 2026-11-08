@@ -2153,7 +2153,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
     width: auto;
     height: var(--topbar-height);
     margin: 0;
-    padding: calc(var(--space-2) + 2px) var(--gutter) 2px;
+    padding: var(--topbar-padding) var(--gutter);
     flex-direction: row;
     align-items: flex-start;
     justify-content: flex-end;
@@ -2186,7 +2186,7 @@ html.deck-open:has(.deck-zoom:not([hidden])) {
   }
 
   .nav-name {
-    top: var(--space-2);
+    top: var(--topbar-padding);
     left: var(--gutter);
   }
 

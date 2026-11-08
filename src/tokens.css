@@ -107,7 +107,8 @@
   --edge-bottom: 34px;     /* the rails stop closer to the bottom of the frame in Figma */
   --column: 600px;         /* centered content column, including its gutter */
   --gutter: var(--space-3);
-  --topbar-height: calc(var(--space-6) + 4px); /* the mobile top bar, with 2px extra above and below the links */
+  --topbar-height: calc(2 * var(--topbar-padding) + 16px); /* the mobile top bar: padding, the links' 16px line, padding */
+  --topbar-padding: 20px;
   --radius-card: 32px;
   --height-card: 552px;
   --hero-peek: 17px;       /* how much of the first card shows on the first screen */
